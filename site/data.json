@@ -1,0 +1,408 @@
+{
+ "aggiornato": "2026-10-05T15:55",
+ "fonte": [
+  "Riepilogo_mensile_C1_10_2026.pdf",
+  "Riepilogo_mensile_C1_11_2026.pdf"
+ ],
+ "totali": {
+  "incasso": 120.0,
+  "biglietti": 4,
+  "spettacoli": 35,
+  "spettacoli_venduti": 4,
+  "capienza": 7000
+ },
+ "spettacoli": [
+  {
+   "id": "20261023_2015",
+   "data": "2026-10-23",
+   "ora": "20:15",
+   "slot": "20:15",
+   "capienza": 200,
+   "biglietti": 1,
+   "incasso": 24.0,
+   "annullati": 0
+  },
+  {
+   "id": "20261023_2115",
+   "data": "2026-10-23",
+   "ora": "21:15",
+   "slot": "21:15",
+   "capienza": 200,
+   "biglietti": 0,
+   "incasso": 0,
+   "annullati": 0
+  },
+  {
+   "id": "20261023_2215",
+   "data": "2026-10-23",
+   "ora": "22:15",
+   "slot": "22:15",
+   "capienza": 200,
+   "biglietti": 0,
+   "incasso": 0,
+   "annullati": 0
+  },
+  {
+   "id": "20261023_2315",
+   "data": "2026-10-23",
+   "ora": "23:15",
+   "slot": "23:15",
+   "capienza": 200,
+   "biglietti": 1,
+   "incasso": 24.0,
+   "annullati": 0
+  },
+  {
+   "id": "20261023_2358",
+   "data": "2026-10-23",
+   "ora": "23:58",
+   "slot": "23:59",
+   "capienza": 200,
+   "biglietti": 0,
+   "incasso": 0,
+   "annullati": 0
+  },
+  {
+   "id": "20261024_2015",
+   "data": "2026-10-24",
+   "ora": "20:15",
+   "slot": "20:15",
+   "capienza": 200,
+   "biglietti": 0,
+   "incasso": 0,
+   "annullati": 0
+  },
+  {
+   "id": "20261024_2115",
+   "data": "2026-10-24",
+   "ora": "21:15",
+   "slot": "21:15",
+   "capienza": 200,
+   "biglietti": 0,
+   "incasso": 0,
+   "annullati": 0
+  },
+  {
+   "id": "20261024_2215",
+   "data": "2026-10-24",
+   "ora": "22:15",
+   "slot": "22:15",
+   "capienza": 200,
+   "biglietti": 0,
+   "incasso": 0,
+   "annullati": 0
+  },
+  {
+   "id": "20261024_2315",
+   "data": "2026-10-24",
+   "ora": "23:15",
+   "slot": "23:15",
+   "capienza": 200,
+   "biglietti": 0,
+   "incasso": 0,
+   "annullati": 0
+  },
+  {
+   "id": "20261024_2359",
+   "data": "2026-10-24",
+   "ora": "23:59",
+   "slot": "23:59",
+   "capienza": 200,
+   "biglietti": 0,
+   "incasso": 0,
+   "annullati": 0
+  },
+  {
+   "id": "20261025_2015",
+   "data": "2026-10-25",
+   "ora": "20:15",
+   "slot": "20:15",
+   "capienza": 200,
+   "biglietti": 0,
+   "incasso": 0,
+   "annullati": 0
+  },
+  {
+   "id": "20261025_2115",
+   "data": "2026-10-25",
+   "ora": "21:15",
+   "slot": "21:15",
+   "capienza": 200,
+   "biglietti": 0,
+   "incasso": 0,
+   "annullati": 0
+  },
+  {
+   "id": "20261025_2215",
+   "data": "2026-10-25",
+   "ora": "22:15",
+   "slot": "22:15",
+   "capienza": 200,
+   "biglietti": 1,
+   "incasso": 24.0,
+   "annullati": 0
+  },
+  {
+   "id": "20261025_2315",
+   "data": "2026-10-25",
+   "ora": "23:15",
+   "slot": "23:15",
+   "capienza": 200,
+   "biglietti": 0,
+   "incasso": 0,
+   "annullati": 0
+  },
+  {
+   "id": "20261025_2359",
+   "data": "2026-10-25",
+   "ora": "23:59",
+   "slot": "23:59",
+   "capienza": 200,
+   "biglietti": 0,
+   "incasso": 0,
+   "annullati": 0
+  },
+  {
+   "id": "20261029_2015",
+   "data": "2026-10-29",
+   "ora": "20:15",
+   "slot": "20:15",
+   "capienza": 200,
+   "biglietti": 0,
+   "incasso": 0,
+   "annullati": 0
+  },
+  {
+   "id": "20261029_2115",
+   "data": "2026-10-29",
+   "ora": "21:15",
+   "slot": "21:15",
+   "capienza": 200,
+   "biglietti": 0,
+   "incasso": 0,
+   "annullati": 0
+  },
+  {
+   "id": "20261029_2215",
+   "data": "2026-10-29",
+   "ora": "22:15",
+   "slot": "22:15",
+   "capienza": 200,
+   "biglietti": 0,
+   "incasso": 0,
+   "annullati": 0
+  },
+  {
+   "id": "20261029_2315",
+   "data": "2026-10-29",
+   "ora": "23:15",
+   "slot": "23:15",
+   "capienza": 200,
+   "biglietti": 0,
+   "incasso": 0,
+   "annullati": 0
+  },
+  {
+   "id": "20261029_2359",
+   "data": "2026-10-29",
+   "ora": "23:59",
+   "slot": "23:59",
+   "capienza": 200,
+   "biglietti": 0,
+   "incasso": 0,
+   "annullati": 0
+  },
+  {
+   "id": "20261030_2015",
+   "data": "2026-10-30",
+   "ora": "20:15",
+   "slot": "20:15",
+   "capienza": 200,
+   "biglietti": 0,
+   "incasso": 0,
+   "annullati": 0
+  },
+  {
+   "id": "20261030_2115",
+   "data": "2026-10-30",
+   "ora": "21:15",
+   "slot": "21:15",
+   "capienza": 200,
+   "biglietti": 0,
+   "incasso": 0,
+   "annullati": 0
+  },
+  {
+   "id": "20261030_2215",
+   "data": "2026-10-30",
+   "ora": "22:15",
+   "slot": "22:15",
+   "capienza": 200,
+   "biglietti": 0,
+   "incasso": 0,
+   "annullati": 0
+  },
+  {
+   "id": "20261030_2315",
+   "data": "2026-10-30",
+   "ora": "23:15",
+   "slot": "23:15",
+   "capienza": 200,
+   "biglietti": 1,
+   "incasso": 48.0,
+   "annullati": 0
+  },
+  {
+   "id": "20261030_2359",
+   "data": "2026-10-30",
+   "ora": "23:59",
+   "slot": "23:59",
+   "capienza": 200,
+   "biglietti": 0,
+   "incasso": 0,
+   "annullati": 0
+  },
+  {
+   "id": "20261031_2015",
+   "data": "2026-10-31",
+   "ora": "20:15",
+   "slot": "20:15",
+   "capienza": 200,
+   "biglietti": 0,
+   "incasso": 0,
+   "annullati": 0
+  },
+  {
+   "id": "20261031_2115",
+   "data": "2026-10-31",
+   "ora": "21:15",
+   "slot": "21:15",
+   "capienza": 200,
+   "biglietti": 0,
+   "incasso": 0,
+   "annullati": 0
+  },
+  {
+   "id": "20261031_2215",
+   "data": "2026-10-31",
+   "ora": "22:15",
+   "slot": "22:15",
+   "capienza": 200,
+   "biglietti": 0,
+   "incasso": 0,
+   "annullati": 0
+  },
+  {
+   "id": "20261031_2315",
+   "data": "2026-10-31",
+   "ora": "23:15",
+   "slot": "23:15",
+   "capienza": 200,
+   "biglietti": 0,
+   "incasso": 0,
+   "annullati": 0
+  },
+  {
+   "id": "20261031_2359",
+   "data": "2026-10-31",
+   "ora": "23:59",
+   "slot": "23:59",
+   "capienza": 200,
+   "biglietti": 0,
+   "incasso": 0,
+   "annullati": 0
+  },
+  {
+   "id": "20261101_2015",
+   "data": "2026-11-01",
+   "ora": "20:15",
+   "slot": "20:15",
+   "capienza": 200,
+   "biglietti": 0,
+   "incasso": 0,
+   "annullati": 0
+  },
+  {
+   "id": "20261101_2115",
+   "data": "2026-11-01",
+   "ora": "21:15",
+   "slot": "21:15",
+   "capienza": 200,
+   "biglietti": 0,
+   "incasso": 0,
+   "annullati": 0
+  },
+  {
+   "id": "20261101_2215",
+   "data": "2026-11-01",
+   "ora": "22:15",
+   "slot": "22:15",
+   "capienza": 200,
+   "biglietti": 0,
+   "incasso": 0,
+   "annullati": 0
+  },
+  {
+   "id": "20261101_2315",
+   "data": "2026-11-01",
+   "ora": "23:15",
+   "slot": "23:15",
+   "capienza": 200,
+   "biglietti": 0,
+   "incasso": 0,
+   "annullati": 0
+  },
+  {
+   "id": "20261101_2359",
+   "data": "2026-11-01",
+   "ora": "23:59",
+   "slot": "23:59",
+   "capienza": 200,
+   "biglietti": 0,
+   "incasso": 0,
+   "annullati": 0
+  }
+ ],
+ "tariffe": [
+  {
+   "codice": "I1",
+   "descrizione": "Tariffa 48 €",
+   "biglietti": 1,
+   "incasso": 48.0
+  },
+  {
+   "codice": "I8",
+   "descrizione": "Tariffa 24 €",
+   "biglietti": 3,
+   "incasso": 72.0
+  }
+ ],
+ "storico": [
+  {
+   "t": "2026-10-05T15:55",
+   "biglietti": 4,
+   "incasso": 120.0
+  }
+ ],
+ "controlli": [
+  {
+   "controllo": "Incasso Vendite = somma TOTALE GENERALE",
+   "ok": true,
+   "dettaglio": "120.00 vs 120.00"
+  },
+  {
+   "controllo": "Spettacoli = pagine dei PDF",
+   "ok": true,
+   "dettaglio": "35 spettacoli, 35 pagine"
+  },
+  {
+   "controllo": "Imponibile IVA + IVA = incasso lordo per riga",
+   "ok": true,
+   "dettaglio": "0 righe non quadrate"
+  }
+ ],
+ "anomalie": [
+  "Orari non standard nei C1: 23:58",
+  "Capienza ricavata dalle altre pagine per 31 spettacoli senza vendite (200)"
+ ]
+}

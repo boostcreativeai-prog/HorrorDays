@@ -1,0 +1,61 @@
+name: Aggiorna report vendite
+
+on:
+  schedule:
+    # ogni ora al minuto 5, dalle 9 alle 24 ora italiana (vale sia con l'ora legale sia con quella solare)
+    - cron: "5 7-23 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: aggiorna-report
+  cancel-in-progress: false
+
+jobs:
+  aggiorna:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Dipendenze
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils
+          pip install -r requirements.txt
+          python -m playwright install --with-deps chromium
+
+      - name: Scarica i C1 da 18Tickets
+        env:
+          T18_LOGIN_URL: ${{ secrets.T18_LOGIN_URL }}
+          T18_USER: ${{ secrets.T18_USER }}
+          T18_PASSWORD: ${{ secrets.T18_PASSWORD }}
+          C1_MONTHS: ${{ vars.C1_MONTHS || '10/2026,11/2026' }}
+          C1_FILM_IDS: ${{ vars.C1_FILM_IDS || '193028' }}
+        run: python scripts/fetch_c1.py
+
+      - name: Genera Excel e dati del sito
+        run: python scripts/build_report.py
+
+      - name: Salva l'aggiornamento (Vercel ripubblica da solo)
+        run: |
+          git config user.name "horrordays-bot"
+          git config user.email "horrordays-bot@users.noreply.github.com"
+          git add data site
+          git diff --cached --quiet && echo "Nessuna modifica" && exit 0
+          git commit -m "Report vendite $(TZ=Europe/Rome date '+%d/%m/%Y %H:%M')"
+          git push
+
+      - name: Screenshot dell'errore
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: errore-18tickets
+          path: fetch_error.png
+          if-no-files-found: ignore

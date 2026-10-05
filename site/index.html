@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0a0a0a">
+<title>Report vendite · Horror Days</title>
+<link rel="icon" href="https://www.horrordays.it/img/favicon.png">
+<link rel="preload" href="fonts/HorrorDaysDisplay-Regular.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600&family=VT323&display=swap" rel="stylesheet">
+<style>
+@font-face{font-family:"HorrorDaysDisplay";font-display:swap;src:url("fonts/HorrorDaysDisplay-Regular.ttf") format("truetype")}
+:root{
+  --red:#d43a31;--red-deep:#8f1a14;--red-dark:#3a0907;
+  --black:#0a0a0a;--black-2:#111010;--black-3:#181616;
+  --white:#ede8e0;--muted:#a39d95;--amber:#f5a623;
+  --line:#d43a3159;--line-soft:#ede8e01a;
+  --f-hand:"HorrorDaysDisplay","Anton",Impact,sans-serif;
+  --f-display:"Anton",Impact,"Arial Narrow",sans-serif;
+  --f-body:"Inter",system-ui,-apple-system,sans-serif;
+  --f-lcd:"VT323",ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--black)}
+body{background:var(--black);color:var(--white);font:400 15px/1.5 var(--f-body);min-height:100vh;
+  background-image:radial-gradient(ellipse 80% 50% at 50% -10%,#3a090755,transparent 70%)}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.06;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+header{border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5;background:#0a0a0ae6;backdrop-filter:blur(8px)}
+header .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;height:64px}
+.brand{display:flex;align-items:center;gap:14px;text-decoration:none;color:inherit}
+.brand img{height:34px;width:auto}
+.brand .wm{font-family:var(--f-hand);color:var(--red);font-size:28px;line-height:1;display:none}
+.tag{font:400 12px/1 var(--f-display);letter-spacing:.24em;text-transform:uppercase;color:var(--muted);border-left:1px solid var(--line);padding-left:14px}
+.live{display:flex;align-items:center;gap:8px;font:400 18px/1 var(--f-lcd);color:var(--amber);white-space:nowrap}
+.live i{width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 10px var(--red);animation:pulse 1.6s infinite}
+@keyframes pulse{50%{opacity:.25}}
+
+.hero{padding:56px 0 28px}
+.kicker{font:400 13px/1 var(--f-display);letter-spacing:.24em;text-transform:uppercase;color:var(--red);margin-bottom:14px}
+h1{font-family:var(--f-hand);font-weight:400;color:var(--red);font-size:clamp(52px,11vw,124px);line-height:.9;letter-spacing:.01em}
+.sub{margin-top:16px;color:var(--muted);max-width:640px}
+
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin:28px 0 8px}
+.kpi{background:var(--black-2);padding:22px 22px 18px}
+.kpi .l{font:400 12px/1.2 var(--f-display);letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.kpi .v{font:400 56px/1 var(--f-lcd);color:var(--amber);margin-top:10px;text-shadow:0 0 18px #f5a62340;font-variant-numeric:tabular-nums}
+.kpi .v small{font-size:26px;color:var(--muted);text-shadow:none}
+.kpi .d{font-size:13px;color:var(--muted);margin-top:6px}
+.kpi .d b{color:var(--white);font-weight:500}
+.up{color:#7bd389!important}
+
+section{padding:40px 0 8px}
+h2{font:400 30px/1.05 var(--f-display);letter-spacing:.03em;text-transform:uppercase;color:var(--white);margin-bottom:6px}
+h2 em{font-style:normal;color:var(--red)}
+.h-sub{color:var(--muted);font-size:14px;margin-bottom:18px}
+.grid2{display:grid;grid-template-columns:1.6fr 1fr;gap:20px}
+.panel{background:var(--black-2);border:1px solid var(--line-soft);padding:20px;position:relative}
+.panel h3{font:400 15px/1 var(--f-display);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:16px}
+.chart{position:relative;height:260px}
+
+.heat{display:grid;grid-template-columns:96px repeat(5,1fr) 78px;gap:4px;font-size:13px}
+.heat .hd{font:400 12px/1 var(--f-display);letter-spacing:.12em;color:var(--muted);text-align:center;padding:6px 0}
+.heat .day{font:400 15px/1 var(--f-display);letter-spacing:.05em;text-transform:uppercase;display:flex;flex-direction:column;justify-content:center}
+.heat .day span{font:400 12px/1.3 var(--f-body);text-transform:none;letter-spacing:0;color:var(--muted)}
+.cell{height:52px;display:flex;align-items:center;justify-content:center;font:400 26px/1 var(--f-lcd);border:1px solid var(--line-soft);background:var(--black-3);color:var(--muted)}
+.cell.on{color:var(--white);border-color:transparent}
+.cell.tot{background:transparent;border:none;color:var(--amber);font-size:24px;justify-content:flex-end}
+
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font:400 12px/1 var(--f-display);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-align:left;padding:10px 8px;border-bottom:1px solid var(--line)}
+td{padding:11px 8px;border-bottom:1px solid var(--line-soft);font-variant-numeric:tabular-nums}
+td.n,th.n{text-align:right}
+tr.zero td{color:#a39d9599}
+.pill{display:inline-block;font:400 11px/1 var(--f-display);letter-spacing:.14em;text-transform:uppercase;padding:5px 9px;border-radius:999px;border:1px solid var(--line)}
+.pill.on{background:var(--red);border-color:var(--red);color:var(--white)}
+.bar{height:6px;background:var(--black-3);border-radius:3px;overflow:hidden;min-width:60px}
+.bar i{display:block;height:100%;background:var(--red)}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.filters button{font:400 12px/1 var(--f-display);letter-spacing:.14em;text-transform:uppercase;padding:9px 14px;border-radius:999px;
+  background:transparent;color:var(--white);border:1px solid var(--line);cursor:pointer}
+.filters button[aria-pressed=true]{background:var(--red);border-color:var(--red)}
+.tscroll{overflow-x:auto}
+
+.checks{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.check{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--line-soft);font-size:14px}
+.check .s{font:400 20px/1 var(--f-lcd);width:34px;flex:none}
+.ok{color:#7bd389}.ko{color:var(--red)}.warn{color:var(--amber)}
+.check small{display:block;color:var(--muted)}
+
+.btn{display:inline-flex;align-items:center;gap:10px;font:400 14px/1 var(--f-display);letter-spacing:.1em;text-transform:uppercase;
+  color:var(--white);background:var(--red);border:1px solid var(--red);border-radius:999px;padding:14px 22px;text-decoration:none;transition:background .2s}
+.btn:hover{background:var(--red-deep)}
+.btn.ghost{background:transparent}
+footer{margin-top:56px;border-top:1px solid var(--line);padding:28px 0 40px;color:var(--muted);font-size:13px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.err{border:1px solid var(--red);background:var(--red-dark);padding:16px;margin-top:24px;display:none}
+.next{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-top:28px;
+  border:1px solid var(--line);background:linear-gradient(90deg,#3a090766,transparent 70%);padding:18px 22px}
+.next .l{font:400 12px/1.2 var(--f-display);letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.next .t{font:400 64px/1 var(--f-lcd);color:var(--amber);text-shadow:0 0 22px #f5a62355;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.next .t.busy{color:var(--red);text-shadow:0 0 22px #d43a3166;font-size:40px;animation:pulse 1.6s infinite}
+.next .info{font-size:14px;color:var(--muted);max-width:420px}
+.next .info b{color:var(--white);font-weight:500}
+.next .prog{flex-basis:100%;height:3px;background:var(--black-3);overflow:hidden}
+.next .prog i{display:block;height:100%;width:0;background:var(--red);transition:width 1s linear}
+
+@media (max-width:860px){
+  .kpis{grid-template-columns:1fr 1fr}.grid2,.checks{grid-template-columns:1fr}
+  .kpi .v{font-size:44px}.tag{display:none}
+  .heat{grid-template-columns:62px repeat(5,1fr) 44px;gap:3px}.cell{height:42px;font-size:20px}
+  .heat .day{font-size:13px}.cell.tot{font-size:18px}
+}
+@media (max-width:420px){.kpi{padding:16px}.kpi .v{font-size:36px}.live span{display:none}.next .t{font-size:48px}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <a class="brand" href="https://www.horrordays.it" target="_blank" rel="noopener">
+    <img src="https://www.horrordays.it/img/logo-hd-wordmark.png" alt="Horror Days" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+    <span class="wm">Horror Days</span>
+    <span class="tag">Report vendite</span>
+  </a>
+  <div class="live" title="Prossimo aggiornamento"><i></i><span>PROSSIMO</span> <b id="cdMini">--:--</b></div>
+</div></header>
+
+<main class="wrap">
+  <div class="hero">
+    <div class="kicker">Horror Drive-In · Non fermatevi · Pozzuoli</div>
+    <h1>Biglietti<br>venduti</h1>
+    <p class="sub">Dati dai Riepiloghi mensili C1 SIAE della cassa 18Tickets, aggiornati ogni ora. Il C1 è cumulativo: ogni aggiornamento sostituisce il precedente.</p>
+    <div class="next" aria-live="polite">
+      <div><div class="l">Prossimo aggiornamento tra</div><div class="t" id="cd">--:--</div></div>
+      <div class="info" id="cdInfo">Calcolo in corso…</div>
+      <div class="prog"><i id="cdBar"></i></div>
+    </div>
+    <div class="err" id="err"></div>
+    <div class="kpis" id="kpis"></div>
+  </div>
+
+  <section>
+    <h2>Andamento <em>vendite</em></h2>
+    <p class="h-sub">Incasso cumulato a ogni aggiornamento</p>
+    <div class="grid2">
+      <div class="panel"><h3>Incasso nel tempo</h3><div class="chart"><canvas id="cTrend"></canvas></div></div>
+      <div class="panel"><h3>Ultimi aggiornamenti</h3><div class="tscroll"><table id="tStorico"></table></div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Serate e <em>turni</em></h2>
+    <p class="h-sub">Biglietti per turno: più il rosso è acceso, più il turno vende</p>
+    <div class="panel"><div class="heat" id="heat"></div></div>
+  </section>
+
+  <section>
+    <div class="grid2">
+      <div class="panel"><h3>Incasso per serata</h3><div class="chart"><canvas id="cSerate"></canvas></div></div>
+      <div class="panel"><h3>Per tariffa</h3><div class="chart" style="height:180px"><canvas id="cTariffe"></canvas></div><table id="tTariffe" style="margin-top:14px"></table></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Top 5 <em>spettacoli</em></h2>
+    <p class="h-sub">Per biglietti venduti</p>
+    <div class="panel tscroll"><table id="tTop"></table></div>
+  </section>
+
+  <section>
+    <h2>Tutti gli <em>spettacoli</em></h2>
+    <p class="h-sub">Capienza e occupazione secondo il C1 SIAE</p>
+    <div class="filters" id="filters"></div>
+    <div class="panel tscroll"><table id="tShows"></table></div>
+  </section>
+
+  <section>
+    <h2>Controlli <em>e anomalie</em></h2>
+    <p class="h-sub">Verifiche automatiche su ogni aggiornamento</p>
+    <div class="checks">
+      <div class="panel"><h3>Quadrature</h3><div id="checks"></div></div>
+      <div class="panel"><h3>Da verificare</h3><div id="anom"></div></div>
+    </div>
+  </section>
+
+  <section style="display:flex;gap:12px;flex-wrap:wrap">
+    <a class="btn" href="HorrorDays_Vendite.xlsx" download>Scarica il report Excel</a>
+    <a class="btn ghost" href="https://www.horrordays.it" target="_blank" rel="noopener">Vai a horrordays.it</a>
+  </section>
+
+  <footer><span>HORROR DAYS · MIX MARK S.R.L. · Uso interno</span><span id="src"></span></footer>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+const C={red:"#d43a31",deep:"#8f1a14",white:"#ede8e0",muted:"#a39d95",amber:"#f5a623",line:"#ede8e01a"};
+const eur=v=>new Intl.NumberFormat("it-IT",{style:"currency",currency:"EUR"}).format(v||0);
+const int=v=>new Intl.NumberFormat("it-IT").format(v||0);
+const pct=v=>new Intl.NumberFormat("it-IT",{style:"percent",maximumFractionDigits:1}).format(v||0);
+const GG=["Dom","Lun","Mar","Mer","Gio","Ven","Sab"],GGL=["Domenica","Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato"];
+const d=s=>new Date(s.length===10?s+"T12:00":s);
+const ddmm=s=>d(s).toLocaleDateString("it-IT",{day:"2-digit",month:"2-digit"});
+const dt=s=>d(s).toLocaleString("it-IT",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});
+const SLOTS=["20:15","21:15","22:15","23:15","23:59"];
+const charts={};let DATA,filter="tutte";
+
+Chart.defaults.color=C.muted;Chart.defaults.font.family="Inter";Chart.defaults.borderColor=C.line;
+Chart.defaults.plugins.legend.display=false;Chart.defaults.maintainAspectRatio=false;
+
+function draw(id,cfg){charts[id]?.destroy();charts[id]=new Chart(document.getElementById(id),cfg)}
+
+function render(D){
+  DATA=D;const T=D.totali,S=D.storico,last=S[S.length-1],prev=S[S.length-2];
+  document.getElementById("src").textContent="Fonte: "+D.fonte.join(", ");
+  const delta=(a,b,f)=>prev?`<span class="${a-b>0?"up":""}">${a-b>0?"+":""}${f(a-b)}</span> dall'ultimo aggiornamento`:"Prima estrazione";
+  const k=[
+    ["Incasso lordo",eur(T.incasso),delta(last.incasso,prev?.incasso,eur)],
+    ["Biglietti venduti",int(T.biglietti),delta(last.biglietti,prev?.biglietti,int)],
+    ["Spettacoli con vendite",`${T.spettacoli_venduti}<small> / ${T.spettacoli}</small>`,`<b>${pct(T.spettacoli_venduti/T.spettacoli)}</b> dei turni`],
+    ["Prezzo medio",eur(T.biglietti?T.incasso/T.biglietti:0),"Incasso diviso biglietti"],
+    ["Occupazione media",pct(T.capienza?T.biglietti/T.capienza:0),`su <b>${int(T.capienza)}</b> posti totali`],
+    ["Ultimo aggiornamento",dt(D.aggiornato).replace(",",""),`<b>${S.length}</b> estrazioni nello storico`]];
+  document.getElementById("kpis").innerHTML=k.map(([l,v,x])=>`<div class="kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="d">${x}</div></div>`).join("");
+
+  // andamento
+  draw("cTrend",{type:"line",data:{labels:S.map(r=>dt(r.t)),datasets:[{data:S.map(r=>r.incasso),borderColor:C.red,backgroundColor:"#d43a3122",fill:true,tension:.3,pointRadius:S.length>40?0:3,pointBackgroundColor:C.red}]},
+    options:{scales:{y:{beginAtZero:true,ticks:{callback:v=>eur(v).replace(",00","")}},x:{ticks:{maxTicksLimit:6}}},plugins:{tooltip:{callbacks:{label:c=>eur(c.raw)}}}}});
+  const rows=S.slice(-8).reverse().map((r,i,a)=>{const p=S[S.length-2-i];const db=p?r.biglietti-p.biglietti:null;
+    return `<tr><td>${dt(r.t)}</td><td class="n">${int(r.biglietti)}</td><td class="n">${eur(r.incasso)}</td><td class="n ${db>0?"up":""}">${db===null?"n.d.":(db>0?"+":"")+db}</td></tr>`}).join("");
+  document.getElementById("tStorico").innerHTML=`<tr><th>Data</th><th class="n">Biglietti</th><th class="n">Incasso</th><th class="n">Δ</th></tr>${rows}`;
+
+  // heatmap
+  const dates=[...new Set(D.spettacoli.map(s=>s.data))];
+  const max=Math.max(1,...D.spettacoli.map(s=>s.biglietti));
+  let h=`<div></div>${SLOTS.map(s=>`<div class="hd">${s}</div>`).join("")}<div class="hd" style="text-align:right">TOT</div>`;
+  for(const dd of dates){const day=D.spettacoli.filter(s=>s.data===dd);const wd=d(dd).getDay();
+    h+=`<div class="day">${ddmm(dd)}<span>${GG[wd]}</span></div>`;
+    for(const sl of SLOTS){const s=day.find(x=>x.slot===sl);const n=s?s.biglietti:null;
+      const a=n?0.25+0.75*n/max:0;
+      h+=n===null?`<div class="cell" title="Nessuno spettacolo">·</div>`:`<div class="cell ${n?"on":""}" style="${n?`background:rgba(212,58,49,${a.toFixed(2)})`:""}" title="${ddmm(dd)} ${s.ora} · ${n} biglietti · ${eur(s.incasso)}">${n}</div>`}
+    h+=`<div class="cell tot">${day.reduce((a,s)=>a+s.biglietti,0)}</div>`}
+  document.getElementById("heat").innerHTML=h;
+
+  // serate
+  draw("cSerate",{type:"bar",data:{labels:dates.map(x=>`${GG[d(x).getDay()]} ${ddmm(x)}`),datasets:[{data:dates.map(x=>D.spettacoli.filter(s=>s.data===x).reduce((a,s)=>a+s.incasso,0)),backgroundColor:C.red,hoverBackgroundColor:C.deep,borderRadius:2}]},
+    options:{scales:{y:{beginAtZero:true,ticks:{callback:v=>eur(v).replace(",00","")}},x:{grid:{display:false}}},plugins:{tooltip:{callbacks:{label:c=>eur(c.raw)}}}}});
+
+  // tariffe
+  const tot=D.tariffe.reduce((a,t)=>a+t.incasso,0)||1;
+  draw("cTariffe",{type:"bar",data:{labels:D.tariffe.map(t=>t.codice),datasets:[{data:D.tariffe.map(t=>t.incasso),backgroundColor:[C.red,C.amber,C.deep,C.muted],borderRadius:2}]},
+    options:{indexAxis:"y",layout:{padding:{left:4}},scales:{x:{beginAtZero:true,ticks:{callback:v=>eur(v).replace(",00","")}},y:{grid:{display:false}}},plugins:{tooltip:{callbacks:{title:c=>D.tariffe[c[0].dataIndex].descrizione,label:c=>eur(c.raw)}}}}});
+  document.getElementById("tTariffe").innerHTML=`<tr><th>Codice</th><th class="n">Biglietti</th><th class="n">Incasso</th><th class="n">%</th></tr>`+
+    D.tariffe.map(t=>`<tr><td>${t.codice} · ${t.descrizione}</td><td class="n">${int(t.biglietti)}</td><td class="n">${eur(t.incasso)}</td><td class="n">${pct(t.incasso/tot)}</td></tr>`).join("");
+
+  // top 5
+  const top=[...D.spettacoli].filter(s=>s.biglietti).sort((a,b)=>b.biglietti-a.biglietti||b.incasso-a.incasso).slice(0,5);
+  document.getElementById("tTop").innerHTML=`<tr><th>#</th><th>Serata</th><th>Turno</th><th class="n">Biglietti</th><th class="n">Incasso</th></tr>`+
+    (top.length?top.map((s,i)=>`<tr><td style="font:400 22px/1 var(--f-lcd);color:var(--amber)">${i+1}</td><td>${GGL[d(s.data).getDay()]} ${ddmm(s.data)}</td><td>${s.ora}</td><td class="n">${int(s.biglietti)}</td><td class="n">${eur(s.incasso)}</td></tr>`).join(""):`<tr><td colspan="5">Ancora nessuna vendita</td></tr>`);
+
+  // filtri e tabella
+  document.getElementById("filters").innerHTML=["tutte",...dates].map(x=>`<button aria-pressed="${filter===x}" data-f="${x}">${x==="tutte"?"Tutte":GG[d(x).getDay()]+" "+ddmm(x)}</button>`).join("");
+  showsTable();
+
+  // controlli
+  document.getElementById("checks").innerHTML=D.controlli.map(c=>`<div class="check"><span class="s ${c.ok?"ok":"ko"}">${c.ok?"OK":"KO"}</span><div>${c.controllo}<small>${c.dettaglio}</small></div></div>`).join("");
+  document.getElementById("anom").innerHTML=D.anomalie.length?D.anomalie.map(a=>`<div class="check"><span class="s warn">!!</span><div>${a}</div></div>`).join(""):`<div class="check"><span class="s ok">OK</span><div>Nessuna anomalia</div></div>`;
+}
+
+function showsTable(){
+  const rows=DATA.spettacoli.filter(s=>filter==="tutte"||s.data===filter);
+  document.getElementById("tShows").innerHTML=`<tr><th>Serata</th><th>Turno</th><th class="n">Biglietti</th><th class="n">Incasso</th><th>Occupazione</th><th>Stato</th></tr>`+
+    rows.map(s=>{const o=s.capienza?s.biglietti/s.capienza:0;return `<tr class="${s.biglietti?"":"zero"}"><td>${GG[d(s.data).getDay()]} ${ddmm(s.data)}</td><td>${s.ora}</td><td class="n">${int(s.biglietti)}</td><td class="n">${eur(s.incasso)}</td>
+      <td><div style="display:flex;align-items:center;gap:10px"><div class="bar" style="flex:1"><i style="width:${Math.min(100,o*100)}%"></i></div><span style="min-width:48px;text-align:right">${pct(o)}</span></div></td>
+      <td><span class="pill ${s.biglietti?"on":""}">${s.biglietti?"Venduto":"Zero vendite"}</span></td></tr>`}).join("");
+}
+document.getElementById("filters").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;filter=b.dataset.f;
+  document.querySelectorAll("#filters button").forEach(x=>x.setAttribute("aria-pressed",x.dataset.f===filter));showsTable()});
+
+
+/* ---- countdown al prossimo aggiornamento ----
+   Deve corrispondere al cron del workflow: "5 7-23 * * *" (minuto 5, ore 7-23 UTC).
+   BUFFER = minuti stimati tra l'avvio del workflow e il sito aggiornato su Vercel. */
+const SCHED={minute:5,fromUTC:7,toUTC:23,buffer:6};
+const pad=n=>String(n).padStart(2,"0");
+function runAt(base){ // prossimo avvio del workflow >= base
+  const t=new Date(base);t.setUTCSeconds(0,0);
+  for(let i=0;i<48;i++){
+    const c=new Date(t);c.setUTCMinutes(SCHED.minute);
+    if(c>=base&&c.getUTCHours()>=SCHED.fromUTC&&c.getUTCHours()<=SCHED.toUTC)return c;
+    t.setUTCHours(t.getUTCHours()+1,0);
+  }
+}
+function nextReady(now){ // prossimo giro non ancora arrivato sul sito (attesa massima 20 minuti)
+  const agg=lastAgg?new Date(lastAgg):new Date(0),MAXWAIT=20*60000;
+  let r=runAt(new Date(now.getTime()-MAXWAIT));
+  while(now>=r&&(agg>=r||now-r>MAXWAIT))r=runAt(new Date(r.getTime()+60000));
+  return {run:r,ready:new Date(r.getTime()+SCHED.buffer*60000)};
+}
+let waiting=false,lastAgg=null,pollTimer=null;
+const hhmm=d=>d.toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit",timeZone:"Europe/Rome"});
+function tick(){
+  const now=new Date(),{run,ready}=nextReady(now);
+  const left=Math.max(0,Math.round((ready-now)/1000));
+  const el=document.getElementById("cd"),info=document.getElementById("cdInfo"),bar=document.getElementById("cdBar"),mini=document.getElementById("cdMini");
+  const inRun=now>=run;
+  if(inRun){
+    el.textContent="In arrivo…";el.classList.add("busy");mini.textContent="ORA";
+    info.innerHTML=`Stiamo scaricando i dati da 18Tickets. La pagina si aggiorna da sola, <b>non serve ricaricarla</b>.`;
+    bar.style.width="100%";
+    if(!waiting){waiting=true;clearInterval(pollTimer);pollTimer=setInterval(load,30000)}
+  }else{
+    el.classList.remove("busy");
+    const h=Math.floor(left/3600),m=Math.floor(left%3600/60),sec=left%60;
+    el.textContent=(h?h+":"+pad(m):pad(m))+":"+pad(sec);
+    mini.textContent=h?`${h}:${pad(m)}h`:`${pad(m)}:${pad(sec)}`;
+    const sameDay=ready.toLocaleDateString("it-IT",{timeZone:"Europe/Rome"})===now.toLocaleDateString("it-IT",{timeZone:"Europe/Rome"});
+    info.innerHTML=`Previsto alle <b>${hhmm(ready)}</b>${sameDay?"":" di domani"}, può slittare di qualche minuto.`+
+      (lastAgg?` Ultimi dati: <b>${dt(lastAgg)}</b>.`:"");
+    const span=60*60*1000,done=1-Math.min(1,(ready-now)/span);bar.style.width=(done*100).toFixed(1)+"%";
+    if(waiting){waiting=false;clearInterval(pollTimer);pollTimer=setInterval(load,5*60*1000)}
+  }
+}
+
+async function load(){
+  try{const r=await fetch("data.json?ts="+Date.now(),{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);const j=await r.json();if(j.aggiornato!==lastAgg){lastAgg=j.aggiornato;render(j);tick()};document.getElementById("err").style.display="none"}
+  catch(e){const el=document.getElementById("err");el.style.display="block";el.textContent="Impossibile caricare i dati del report ("+e.message+")."}
+}
+load();pollTimer=setInterval(load,5*60*1000);tick();setInterval(tick,1000);
+</script>
+</body>
+</html>
