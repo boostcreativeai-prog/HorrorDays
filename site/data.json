@@ -1,5 +1,5 @@
 {
- "aggiornato": "2026-10-05T18:24",
+ "aggiornato": "2026-10-05T18:40",
  "fonte": [
   "Riepilogo_mensile_C1_10_2026.pdf",
   "Riepilogo_mensile_C1_11_2026.pdf"
@@ -400,6 +400,11 @@
   },
   {
    "t": "2026-10-05T18:24",
+   "biglietti": 11,
+   "incasso": 360
+  },
+  {
+   "t": "2026-10-05T18:40",
    "biglietti": 11,
    "incasso": 360.0
   }
