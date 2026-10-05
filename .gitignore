@@ -1,4 +1,6 @@
 __pycache__/
 *.tmp
 fetch_error.png
+fetch_error.html
+fetch_network.log
 .env

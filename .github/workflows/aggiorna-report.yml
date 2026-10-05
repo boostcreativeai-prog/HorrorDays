@@ -16,7 +16,7 @@ concurrency:
 jobs:
   aggiorna:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
 
@@ -57,5 +57,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: errore-18tickets
-          path: fetch_error.png
+          path: |
+            fetch_error.png
+            fetch_error.html
+            fetch_network.log
           if-no-files-found: ignore
