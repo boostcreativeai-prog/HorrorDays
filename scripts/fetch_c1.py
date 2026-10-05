@@ -2,8 +2,9 @@
 Percorso sull'intranet di 18Tickets:
 1. login su /intranet/ (campi employee[email] e employee[password]); la sessione scade presto,
    quindi il login si rifà a ogni esecuzione
-2. /intranet/siae_reports/index: si imposta la data 01/MM/AAAA nel campo "from" e si preme
-   "Mostra stato dei report per la data selezionata" (la sezione si carica via AJAX);
+2. dalla home /intranet/ si clicca "Riepiloghi di servizio (C1, C2)": la sezione si carica via AJAX
+   (aprire /siae_reports/index direttamente dà HTTP 406). Si imposta la data 01/MM/AAAA nel campo
+   "from", si preme "Mostra stato dei report per la data selezionata" (anche questo via AJAX),
    poi si sceglie l'evento nel menu film_ids e si preme "Stampa c1 mensile"
 3. il report viene generato in modo asincrono: quando è pronto compare il popup
    "Il tuo report è pronto!" con il link "clicca qui" a un PDF firmato su DigitalOcean Spaces,
@@ -51,7 +52,7 @@ def login(page):
     page.wait_for_load_state("networkidle")
 
     otp = page.locator('input[name*="otp" i]:visible, input[autocomplete="one-time-code"]:visible').count()
-    page.goto(f"{BASE}/siae_reports/index", wait_until="domcontentloaded")
+    page.goto(f"{BASE}/", wait_until="domcontentloaded")
     if "sign_in" in page.url or page.locator('input[name="employee[password]"]').count() \
             or "richiesta autorizzazione" in page.content():
         if otp:
@@ -79,7 +80,10 @@ def request_c1(page, mm, yyyy):
     """Avvia la generazione del C1 mensile filtrato sull'evento.
     Restituisce quanti link al PDF del mese c'erano prima del clic,
     oppure None se nel mese l'evento non compare (mese saltato)."""
-    page.goto(f"{BASE}/siae_reports/index", wait_until="networkidle")
+    # la sezione Riepiloghi si apre solo dal link nella home (caricamento AJAX)
+    page.goto(f"{BASE}/", wait_until="networkidle")
+    page.get_by_role("link", name=re.compile(r"Riepiloghi di servizio", re.I)).first.click()
+    page.locator("input#from").wait_for(state="attached", timeout=60_000)
     # data al primo del mese, poi "Mostra stato dei report per la data selezionata" (AJAX)
     page.locator("input#from").evaluate("(el, v) => { el.value = v; }", f"01/{mm}/{yyyy}")
     page.locator('form[action*="siae_reports/show"] input[type=submit]').first.click()
