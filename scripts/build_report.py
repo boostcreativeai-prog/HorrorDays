@@ -25,6 +25,9 @@ SNAP = dt.datetime.now(ZoneInfo("Europe/Rome")).replace(tzinfo=None, second=0, m
 # nel foglio Tariffe (colonna "Persone per auto"), altrimenti finiscono tra le anomalie.
 PERSONE_PER_PREZZO = {24.0: 2, 36.0: 3, 48.0: 4}
 EURO_A_PERSONA = 12.0
+# Capienza reale del drive-in: 100 auto per turno (il C1 riporta 200, che non è il limite effettivo).
+# Le persone non hanno un limite proprio: dipendono dalle auto.
+CAPIENZA_AUTO = 100
 TIPI = sorted(set(PERSONE_PER_PREZZO.values()))  # 2, 3, 4
 
 pdfs = sorted(glob.glob(os.path.join(args.c1, "*.pdf")) + glob.glob(os.path.join(args.c1, "*.PDF")))
@@ -70,13 +73,9 @@ for p in pdfs:
             shows.append(dict(id=sid, date=date, time=dt.time(hh, mm), titolo=tit, locale=loc, codloc=cod,
                               cap=cap, tot_n=int(tg.group(1)), tot=float(tg.group(2)), mese=mese))
 
-# capienza per spettacoli a zero vendite: valore del locale letto dalle altre pagine
-caps = [s["cap"] for s in shows if s["cap"]]
-default_cap = max(set(caps), key=caps.count) if caps else None
 for s in shows:
-    s["cap_derived"] = s["cap"] is None
-    if s["cap"] is None:
-        s["cap"] = default_cap
+    s["cap_c1"] = s["cap"]
+    s["cap"] = CAPIENZA_AUTO
 shows.sort(key=lambda s: (s["date"], s["time"]))
 sales.sort(key=lambda s: (s["date"], s["time"]))
 
@@ -143,6 +142,62 @@ for r in storico:
 storico = [r for r in storico if r[0] != SNAP]
 storico.append([SNAP, tot_n, tot_l, tot_p])
 
+# ---- registro vendite ----
+# Il C1 è cumulativo e non dice quando è stato comprato ogni biglietto. Confrontando ogni turno con
+# l'aggiornamento precedente si sa in quale finestra (da → a) sono avvenute le vendite: la precisione
+# è quella degli aggiornamenti (ogni ora, o meno con "Aggiorna ora").
+MOV = os.path.join(os.path.dirname(args.xlsx) or ".", "movimenti.json")
+SNAP_S = SNAP.strftime("%Y-%m-%dT%H:%M")
+ZERO = {"auto": 0, "persone": 0, "incasso": 0, "tipi": {}}
+
+def stato_turni():
+    st = {}
+    for s in shows:
+        rows = [v for v in sales if v["id"] == s["id"]]
+        st[s["id"]] = {"data": s["date"].isoformat(), "ora": s["time"].strftime("%H:%M"),
+                       "auto": sum(v["n"] for v in rows), "persone": sum(v["persone"] for v in rows),
+                       "incasso": round(sum(v["lordo"] for v in rows), 2),
+                       "tipi": {str(p): sum(v["n"] for v in rows if v["pers_auto"] == p) for p in TIPI}}
+    return st
+
+registro = {"stato": None, "movimenti": []}
+if os.path.exists(MOV):
+    with open(MOV, encoding="utf-8") as f:
+        registro = json.load(f)
+prec = registro.get("stato")
+if prec is None or prec["t"] < SNAP_S:  # nello stesso minuto non si confronta: le differenze restano al giro dopo
+    ora_turni, prima = stato_turni(), (prec or {}).get("spettacoli", {})
+    for sid in sorted(set(ora_turni) | set(prima)):
+        a, b = ora_turni.get(sid) or {**prima[sid], **ZERO}, prima.get(sid, ZERO)
+        mov = {"da": prec["t"] if prec else None, "a": SNAP_S, "id": sid, "data": a["data"], "ora": a["ora"],
+               "auto": a["auto"] - b["auto"], "persone": a["persone"] - b["persone"],
+               "incasso": round(a["incasso"] - b["incasso"], 2),
+               "tipi": {str(p): a["tipi"].get(str(p), 0) - b["tipi"].get(str(p), 0) for p in TIPI}}
+        if mov["auto"] or mov["persone"] or mov["incasso"]:
+            registro["movimenti"].append(mov)
+    registro["stato"] = {"t": SNAP_S, "spettacoli": ora_turni}
+movimenti = registro["movimenti"]
+
+def momento(m):
+    """Istante di riferimento della vendita: metà della finestra tra due aggiornamenti."""
+    a = dt.datetime.fromisoformat(m["a"])
+    return a - (a - dt.datetime.fromisoformat(m["da"])) / 2 if m["da"] else None
+
+GIORNI = ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"]
+def raggruppa(chiave, chiavi=None):
+    acc = {k: {"auto": 0, "persone": 0, "incasso": 0.0} for k in (chiavi or [])}
+    for m in movimenti:
+        t = momento(m)
+        if t is None:
+            continue
+        r = acc.setdefault(chiave(t), {"auto": 0, "persone": 0, "incasso": 0.0})
+        r["auto"] += m["auto"]; r["persone"] += m["persone"]; r["incasso"] = round(r["incasso"] + m["incasso"], 2)
+    return acc
+picchi_giorno = dict(sorted(raggruppa(lambda t: t.date().isoformat()).items()))
+picchi_ora = raggruppa(lambda t: t.hour, range(24))
+picchi_settimana = raggruppa(lambda t: t.weekday(), range(7))
+prima_rilevazione = [m for m in movimenti if m["da"] is None]
+
 # ---- stili ----
 HDR = PatternFill("solid", fgColor="1F2430"); HF = Font(bold=True, color="FFFFFF", name="Arial", size=10)
 ALT = PatternFill("solid", fgColor="F2F3F5"); YEL = PatternFill("solid", fgColor="FFF2A8")
@@ -170,7 +225,7 @@ wb = Workbook()
 dash = wb.active; dash.title = "Dashboard"
 wsT = wb.create_sheet("Tariffe"); wsY = wb.create_sheet("Tipologie"); wsS = wb.create_sheet("Spettacoli")
 wsV = wb.create_sheet("Vendite"); wsP = wb.create_sheet("Per tariffa"); wsR = wb.create_sheet("Per serata")
-wsH = wb.create_sheet("Storico")
+wsH = wb.create_sheet("Storico"); wsM = wb.create_sheet("Registro vendite"); wsK = wb.create_sheet("Picchi vendite")
 
 # Tariffe (modificabile: la colonna D decide quante persone vale ogni auto)
 header(wsT, ["Codice titolo", "Descrizione", "Tipologia (Intero/Ridotto/Omaggio)", "Persone per auto"], [14, 26, 30, 18])
@@ -233,9 +288,6 @@ for i, s in enumerate(shows, 2):
             f'=IF(F{i}>0,"Venduto","Zero vendite")', f"=F{i}+L{i}/100000+(1000-ROW())/100000000"]
     for c, v in enumerate(vals, 1): wsS.cell(row=i, column=c, value=v)
 body(wsS, nS, 17, {2: DATE, 4: TIME, 5: INT, 6: INT, 7: INT, 8: INT, 9: INT, 10: INT, 11: INT, 12: EUR, 13: EUR, 14: EUR, 15: PCT})
-for i, s in enumerate(shows, 2):
-    if s["cap_derived"]:
-        wsS.cell(row=i, column=5).font = Font(name="Arial", size=10, italic=True, color="6B7280")
 wsS.column_dimensions["Q"].hidden = True
 wsS.conditional_formatting.add(f"P2:P{SL}", FormulaRule(formula=[f'P2="Venduto"'], font=Font(color="1E6B3A", bold=True)))
 
@@ -303,6 +355,50 @@ HL = len(storico) + 1
 for i in range(2, HL + 1):
     wsH.cell(row=i, column=8, value=f'=TEXT(A{i},"DD/MM HH:MM")')
 wsH.cell(row=1, column=8, value="Etichetta grafico")
+
+# Registro vendite (valori: ogni riga è la differenza di un turno tra due aggiornamenti)
+header(wsM, ["Venduto dopo il", "Venduto entro il", "Data spettacolo", "Turno", "Auto"] + [f"Auto da {p}" for p in TIPI]
+       + ["Persone", "Incasso"], [17, 17, 14, 8, 8] + [10] * len(TIPI) + [10, 12])
+for i, m in enumerate(movimenti, 2):
+    vals = [dt.datetime.fromisoformat(m["da"]) if m["da"] else "prima della 1ª rilevazione", dt.datetime.fromisoformat(m["a"]),
+            dt.date.fromisoformat(m["data"]), dt.time.fromisoformat(m["ora"]), m["auto"]] + \
+           [m["tipi"].get(str(p), 0) for p in TIPI] + [m["persone"], m["incasso"]]
+    for c, v in enumerate(vals, 1): wsM.cell(row=i, column=c, value=v)
+NM = 5 + len(TIPI) + 2
+body(wsM, len(movimenti), NM, {1: "DD/MM/YYYY HH:MM", 2: "DD/MM/YYYY HH:MM", 3: DATE, 4: TIME,
+                               **{c: '+#,##0;-#,##0;0' for c in range(5, NM)}, NM: EUR})
+
+# Picchi vendite: per giorno, fascia oraria e giorno della settimana (vendite dopo la prima rilevazione)
+wsK["A1"] = "Quando si vende · ogni vendita è collocata a metà della finestra tra due aggiornamenti"
+wsK["A1"].font = Font(name="Arial", size=11, bold=True, color="1F2430")
+def tabella(r0, c0, titolo, righe, fmt0):
+    for j, h in enumerate([titolo, "Auto", "Persone", "Incasso"]):
+        x = wsK.cell(row=r0, column=c0 + j, value=h); x.fill = HDR; x.font = HF; x.alignment = Alignment(horizontal="center")
+    for i, (k, v) in enumerate(righe, r0 + 1):
+        vals = [k, v["auto"], v["persone"], v["incasso"]]
+        for j, val in enumerate(vals):
+            x = wsK.cell(row=i, column=c0 + j, value=val); x.font = BF; x.border = Border(bottom=thin)
+            x.number_format = [fmt0, INT, INT, EUR][j]
+    return r0 + 1, r0 + len(righe)
+wsK.column_dimensions["A"].width = 14
+for c, w in zip("BCDEFGHIJKLMNO", [9, 9, 12, 3, 14, 9, 9, 12, 3, 14, 9, 9, 12, 3]):
+    wsK.column_dimensions[c].width = w
+g0, g1 = tabella(3, 1, "Giorno", [(dt.date.fromisoformat(k), v) for k, v in picchi_giorno.items()], DATE)
+tabella(3, 6, "Fascia oraria", [(f"{h:02d}:00-{(h + 1) % 24:02d}:00", picchi_ora[h]) for h in range(24)], "@")
+tabella(3, 11, "Giorno settimana", [(GIORNI[w], picchi_settimana[w]) for w in range(7)], "@")
+if picchi_giorno:
+    chg = BarChart(); chg.type = "col"; chg.title = "Auto vendute per giorno"; chg.style = 2; chg.legend = None
+    chg.add_data(Reference(wsK, min_col=2, min_row=3, max_row=g1), titles_from_data=True)
+    chg.set_categories(Reference(wsK, min_col=1, min_row=g0, max_row=g1))
+    chg.series[0].graphicalProperties.solidFill = "8B1E1E"; chg.x_axis.number_format = "DD/MM"
+    chg.y_axis.delete = False; chg.x_axis.delete = False; chg.height = 7.5; chg.width = 16
+    wsK.add_chart(chg, "P3")
+cho = BarChart(); cho.type = "col"; cho.title = "Auto vendute per fascia oraria"; cho.style = 2; cho.legend = None
+cho.add_data(Reference(wsK, min_col=7, min_row=3, max_row=27), titles_from_data=True)
+cho.set_categories(Reference(wsK, min_col=6, min_row=4, max_row=27))
+cho.series[0].graphicalProperties.solidFill = "D43A31"
+cho.y_axis.delete = False; cho.x_axis.delete = False; cho.height = 7.5; cho.width = 16
+wsK.add_chart(cho, "P19")
 
 # Dashboard
 dash.sheet_view.showGridLines = False
@@ -400,8 +496,10 @@ if new_codes: anomalies.append("Codici tariffa nuovi da definire: " + ", ".join(
 if missing: anomalies.append("Spettacoli presenti prima e assenti nei nuovi C1: " + ", ".join(map(str, missing)))
 odd = sorted({s["time"].strftime("%H:%M") for s in shows} - {"20:15", "21:15", "22:15", "23:15", "23:59", "00:15"})
 if odd: anomalies.append("Orari non standard nei C1: " + ", ".join(odd))
-derived = sum(1 for s in shows if s["cap_derived"])
-if derived: anomalies.append(f"Capienza ricavata dalle altre pagine per {derived} spettacoli senza vendite ({default_cap})")
+auto_turno = {}
+for v in sales: auto_turno[v["id"]] = auto_turno.get(v["id"], 0) + v["n"]
+pieni = sorted(i for i, n in auto_turno.items() if n > CAPIENZA_AUTO)
+if pieni: anomalies.append(f"Turni oltre la capienza di {CAPIENZA_AUTO} auto: " + ", ".join(f"{i} ({auto_turno[i]})" for i in pieni))
 if non_mappati:
     anomalies.append("Auto senza numero di persone (prezzo non previsto, da indicare nel foglio Tariffe): " +
                      ", ".join(f"{s['id']} {s['code']} {s['prezzo']:.2f} € ({s['n']})" for s in non_mappati))
@@ -439,12 +537,21 @@ data = {
                  "incasso": round(sum(v["lordo"] for v in sales if v["code"] == c), 2)} for c, t in tmap.items()],
     "storico": [{"t": (r[0].strftime("%Y-%m-%dT%H:%M") if isinstance(r[0], dt.datetime) else str(r[0])),
                  "auto": r[1], "biglietti": r[1], "persone": r[3], "incasso": r[2]} for r in storico],
+    "capienza_turno": CAPIENZA_AUTO,
+    # registro vendite: ultime 300 finestre (il registro completo è in data/movimenti.json e nell'Excel)
+    "movimenti": movimenti[-300:],
+    "movimenti_totali": len(movimenti),
+    "picchi": {"giorni": [{"giorno": k, **v} for k, v in picchi_giorno.items()],
+               "ore": [{"ora": h, **picchi_ora[h]} for h in range(24)],
+               "settimana": [{"giorno": w, **picchi_settimana[w]} for w in range(7)]},
     "controlli": checks,
     "anomalie": anomalies,
 }
 os.makedirs(os.path.dirname(args.json) or ".", exist_ok=True)
 with open(args.json, "w", encoding="utf-8") as f:
     json.dump(data, f, ensure_ascii=False, indent=1)
+with open(MOV, "w", encoding="utf-8") as f:
+    json.dump(registro, f, ensure_ascii=False, indent=1)
 if args.xlsx_copy:
     import shutil; shutil.copyfile(OUT, args.xlsx_copy)
 

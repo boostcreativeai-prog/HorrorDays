@@ -5,7 +5,7 @@ dai Riepiloghi mensili C1 SIAE della cassa 18Tickets e pubblicato su Vercel.
 
 ## Come funziona
 
-Ogni ora, dalle 9 alle 24, GitHub Actions:
+Ogni ora, giorno e notte, GitHub Actions:
 
 1. fa il login sull'intranet di 18Tickets, chiede il C1 mensile di ogni mese filtrato su HORROR DAYS e scarica il PDF quando è pronto (`scripts/fetch_c1.py`);
 2. aggiorna `data/HorrorDays_Vendite.xlsx` e `site/data.json` (`scripts/build_report.py`), con lo storico conservato;
@@ -22,6 +22,13 @@ quindi solo acquisti andati a buon fine.
 dipendono dal prezzo: 24 € = 2 persone, 36 € = 3, 48 € = 4 (sempre 12 € a persona). Il report mostra auto e
 persone per turno, serata e tipologia. Un prezzo diverso (es. un omaggio a 0 €) finisce tra le anomalie:
 indica quante persone vale nella colonna "Persone per auto" del foglio Tariffe dell'Excel in `data/`.
+La capienza è di **100 auto per turno** (`CAPIENZA_AUTO` in `scripts/build_report.py`), non i 200 del C1.
+
+**Quando si vende.** Il C1 non riporta l'ora di ogni acquisto. A ogni aggiornamento lo script confronta ogni turno
+con l'aggiornamento precedente e salva le differenze in `data/movimenti.json` (registro vendite): così si sa
+tra quali due aggiornamenti è avvenuta ogni vendita. Da qui il sito e l'Excel (fogli Registro vendite e
+Picchi vendite) calcolano giorni, fasce orarie e giorni della settimana con più vendite. Le auto vendute prima
+della prima rilevazione (05/10/2026 15:55) non hanno un orario.
 
 Se il download fallisce il workflow si ferma, il sito resta all'ultimo aggiornamento valido
 e GitHub ti manda un'email. Nella pagina dell'esecuzione trovi lo screenshot dell'errore.
@@ -34,6 +41,7 @@ scripts/fetch_c1.py                     login e download da 18Tickets
 scripts/build_report.py                 lettura C1, Excel, dati del sito, controlli
 data/c1/                                PDF C1 (uno per mese, sovrascritti a ogni giro)
 data/HorrorDays_Vendite.xlsx            report Excel (il foglio Tariffe si può modificare)
+data/movimenti.json                     registro vendite (differenze tra un aggiornamento e l'altro)
 site/                                   sito pubblicato su Vercel
 middleware.js                           password del sito (Basic Auth)
 api/aggiorna.js                         pulsante "Aggiorna ora" (avvia il workflow)
@@ -74,6 +82,6 @@ python -m http.server -d site       # apri http://localhost:8000
 
 ## Minuti di GitHub Actions
 
-Ogni giro dura 2-4 minuti (il report C1 viene generato in modo asincrono): 17 giri al giorno sono circa 1.000-2.000 minuti al mese,
-al limite dei 2.000 gratuiti dei repository privati: se servisse, riduci la fascia oraria nel workflow. Per fermare gli aggiornamenti dopo il 1° novembre
+Ogni giro dura circa un minuto (GitHub ne conteggia 1-2): 24 giri al giorno sono circa 750-1.500 minuti al mese,
+più i clic su "Aggiorna ora", dentro i 2.000 gratuiti dei repository privati. Per fermare gli aggiornamenti dopo il 1° novembre
 disattiva il workflow in Actions.

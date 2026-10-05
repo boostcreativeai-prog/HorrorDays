@@ -2,8 +2,8 @@ name: Aggiorna report vendite
 
 on:
   schedule:
-    # ogni ora al minuto 5, dalle 9 alle 24 ora italiana (vale sia con l'ora legale sia con quella solare)
-    - cron: "5 7-23 * * *"
+    # ogni ora al minuto 5, giorno e notte: così il registro vendite colloca ogni vendita nell'ora giusta
+    - cron: "5 * * * *"
   workflow_dispatch: {}
 
 permissions:
