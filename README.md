@@ -23,6 +23,7 @@ scripts/build_report.py                 lettura C1, Excel, dati del sito, contro
 data/c1/                                PDF C1 (uno per mese, sovrascritti a ogni giro)
 data/HorrorDays_Vendite.xlsx            report Excel (il foglio Tariffe si può modificare)
 site/                                   sito pubblicato su Vercel
+middleware.js                           password del sito (Basic Auth)
 ```
 
 ## Configurazione (una volta sola)
@@ -35,8 +36,10 @@ site/                                   sito pubblicato su Vercel
    Per cambiarli crea le variabili `C1_MONTHS` e `C1_FILM_IDS` in Settings > Secrets and variables > Actions > Variables.
 4. **Verifica.** Lo script controlla che ogni pagina del PDF sia di HORROR DAYS: se il filtro evento non funziona si ferma.
 5. **Vercel.** New Project > importa il repository. `vercel.json` imposta già la cartella `site` come output, senza build.
-6. **Protezione.** Il report contiene dati di vendita: in Vercel attiva Settings > Deployment Protection
-   (Vercel Authentication), così lo vede solo chi è nel tuo team.
+6. **Protezione.** Il report contiene dati di vendita: `middleware.js` chiede utente e password (Basic Auth)
+   per tutto il sito, `data.json` compreso. In Vercel > Settings > Environment Variables crea `REPORT_USER` e
+   `REPORT_PASSWORD` (ambiente Production) e ripubblica. Senza le due variabili il sito risponde 503.
+   In Settings > Environments > Production la branch deve essere `main`. Tieni privato anche il repository GitHub.
 7. **Prova.** In Actions > Aggiorna report vendite > Run workflow lancia un primo giro a mano.
 
 ## Font e logo
