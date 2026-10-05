@@ -1,16 +1,49 @@
 {
- "aggiornato": "2026-10-05T18:40",
+ "aggiornato": "2026-10-05T18:53",
  "fonte": [
   "Riepilogo_mensile_C1_10_2026.pdf",
   "Riepilogo_mensile_C1_11_2026.pdf"
  ],
  "totali": {
   "incasso": 360.0,
+  "auto": 11,
   "biglietti": 11,
+  "persone": 30,
+  "tipi": {
+   "2": 7,
+   "3": 0,
+   "4": 4
+  },
   "spettacoli": 35,
   "spettacoli_venduti": 9,
   "capienza": 7000
  },
+ "tipologie": [
+  {
+   "persone": 2,
+   "prezzo": 24.0,
+   "etichetta": "Auto da 2",
+   "auto": 7,
+   "persone_tot": 14,
+   "incasso": 168.0
+  },
+  {
+   "persone": 3,
+   "prezzo": 36.0,
+   "etichetta": "Auto da 3",
+   "auto": 0,
+   "persone_tot": 0,
+   "incasso": 0
+  },
+  {
+   "persone": 4,
+   "prezzo": 48.0,
+   "etichetta": "Auto da 4",
+   "auto": 4,
+   "persone_tot": 16,
+   "incasso": 192.0
+  }
+ ],
  "spettacoli": [
   {
    "id": "20261023_2015",
@@ -18,7 +51,14 @@
    "ora": "20:15",
    "slot": "20:15",
    "capienza": 200,
+   "auto": 1,
    "biglietti": 1,
+   "persone": 2,
+   "tipi": {
+    "2": 1,
+    "3": 0,
+    "4": 0
+   },
    "incasso": 24.0,
    "annullati": 0
   },
@@ -28,7 +68,14 @@
    "ora": "21:15",
    "slot": "21:15",
    "capienza": 200,
+   "auto": 1,
    "biglietti": 1,
+   "persone": 4,
+   "tipi": {
+    "2": 0,
+    "3": 0,
+    "4": 1
+   },
    "incasso": 48.0,
    "annullati": 0
   },
@@ -38,7 +85,14 @@
    "ora": "22:15",
    "slot": "22:15",
    "capienza": 200,
+   "auto": 1,
    "biglietti": 1,
+   "persone": 2,
+   "tipi": {
+    "2": 1,
+    "3": 0,
+    "4": 0
+   },
    "incasso": 24.0,
    "annullati": 0
   },
@@ -48,7 +102,14 @@
    "ora": "23:15",
    "slot": "23:15",
    "capienza": 200,
+   "auto": 2,
    "biglietti": 2,
+   "persone": 4,
+   "tipi": {
+    "2": 2,
+    "3": 0,
+    "4": 0
+   },
    "incasso": 48.0,
    "annullati": 0
   },
@@ -58,7 +119,14 @@
    "ora": "23:58",
    "slot": "23:59",
    "capienza": 200,
+   "auto": 0,
    "biglietti": 0,
+   "persone": 0,
+   "tipi": {
+    "2": 0,
+    "3": 0,
+    "4": 0
+   },
    "incasso": 0,
    "annullati": 0
   },
@@ -68,7 +136,14 @@
    "ora": "20:15",
    "slot": "20:15",
    "capienza": 200,
+   "auto": 0,
    "biglietti": 0,
+   "persone": 0,
+   "tipi": {
+    "2": 0,
+    "3": 0,
+    "4": 0
+   },
    "incasso": 0,
    "annullati": 0
   },
@@ -78,7 +153,14 @@
    "ora": "21:15",
    "slot": "21:15",
    "capienza": 200,
+   "auto": 0,
    "biglietti": 0,
+   "persone": 0,
+   "tipi": {
+    "2": 0,
+    "3": 0,
+    "4": 0
+   },
    "incasso": 0,
    "annullati": 0
   },
@@ -88,7 +170,14 @@
    "ora": "22:15",
    "slot": "22:15",
    "capienza": 200,
+   "auto": 0,
    "biglietti": 0,
+   "persone": 0,
+   "tipi": {
+    "2": 0,
+    "3": 0,
+    "4": 0
+   },
    "incasso": 0,
    "annullati": 0
   },
@@ -98,7 +187,14 @@
    "ora": "23:15",
    "slot": "23:15",
    "capienza": 200,
+   "auto": 0,
    "biglietti": 0,
+   "persone": 0,
+   "tipi": {
+    "2": 0,
+    "3": 0,
+    "4": 0
+   },
    "incasso": 0,
    "annullati": 0
   },
@@ -108,7 +204,14 @@
    "ora": "23:59",
    "slot": "23:59",
    "capienza": 200,
+   "auto": 0,
    "biglietti": 0,
+   "persone": 0,
+   "tipi": {
+    "2": 0,
+    "3": 0,
+    "4": 0
+   },
    "incasso": 0,
    "annullati": 0
   },
@@ -118,7 +221,14 @@
    "ora": "20:15",
    "slot": "20:15",
    "capienza": 200,
+   "auto": 0,
    "biglietti": 0,
+   "persone": 0,
+   "tipi": {
+    "2": 0,
+    "3": 0,
+    "4": 0
+   },
    "incasso": 0,
    "annullati": 0
   },
@@ -128,7 +238,14 @@
    "ora": "21:15",
    "slot": "21:15",
    "capienza": 200,
+   "auto": 1,
    "biglietti": 1,
+   "persone": 2,
+   "tipi": {
+    "2": 1,
+    "3": 0,
+    "4": 0
+   },
    "incasso": 24.0,
    "annullati": 0
   },
@@ -138,7 +255,14 @@
    "ora": "22:15",
    "slot": "22:15",
    "capienza": 200,
+   "auto": 1,
    "biglietti": 1,
+   "persone": 2,
+   "tipi": {
+    "2": 1,
+    "3": 0,
+    "4": 0
+   },
    "incasso": 24.0,
    "annullati": 0
   },
@@ -148,7 +272,14 @@
    "ora": "23:15",
    "slot": "23:15",
    "capienza": 200,
+   "auto": 0,
    "biglietti": 0,
+   "persone": 0,
+   "tipi": {
+    "2": 0,
+    "3": 0,
+    "4": 0
+   },
    "incasso": 0,
    "annullati": 0
   },
@@ -158,7 +289,14 @@
    "ora": "23:59",
    "slot": "23:59",
    "capienza": 200,
+   "auto": 0,
    "biglietti": 0,
+   "persone": 0,
+   "tipi": {
+    "2": 0,
+    "3": 0,
+    "4": 0
+   },
    "incasso": 0,
    "annullati": 0
   },
@@ -168,7 +306,14 @@
    "ora": "20:15",
    "slot": "20:15",
    "capienza": 200,
+   "auto": 0,
    "biglietti": 0,
+   "persone": 0,
+   "tipi": {
+    "2": 0,
+    "3": 0,
+    "4": 0
+   },
    "incasso": 0,
    "annullati": 0
   },
@@ -178,7 +323,14 @@
    "ora": "21:15",
    "slot": "21:15",
    "capienza": 200,
+   "auto": 0,
    "biglietti": 0,
+   "persone": 0,
+   "tipi": {
+    "2": 0,
+    "3": 0,
+    "4": 0
+   },
    "incasso": 0,
    "annullati": 0
   },
@@ -188,7 +340,14 @@
    "ora": "22:15",
    "slot": "22:15",
    "capienza": 200,
+   "auto": 1,
    "biglietti": 1,
+   "persone": 4,
+   "tipi": {
+    "2": 0,
+    "3": 0,
+    "4": 1
+   },
    "incasso": 48.0,
    "annullati": 0
   },
@@ -198,7 +357,14 @@
    "ora": "23:15",
    "slot": "23:15",
    "capienza": 200,
+   "auto": 0,
    "biglietti": 0,
+   "persone": 0,
+   "tipi": {
+    "2": 0,
+    "3": 0,
+    "4": 0
+   },
    "incasso": 0,
    "annullati": 0
   },
@@ -208,7 +374,14 @@
    "ora": "23:59",
    "slot": "23:59",
    "capienza": 200,
+   "auto": 1,
    "biglietti": 1,
+   "persone": 2,
+   "tipi": {
+    "2": 1,
+    "3": 0,
+    "4": 0
+   },
    "incasso": 24.0,
    "annullati": 0
   },
@@ -218,7 +391,14 @@
    "ora": "20:15",
    "slot": "20:15",
    "capienza": 200,
+   "auto": 0,
    "biglietti": 0,
+   "persone": 0,
+   "tipi": {
+    "2": 0,
+    "3": 0,
+    "4": 0
+   },
    "incasso": 0,
    "annullati": 0
   },
@@ -228,7 +408,14 @@
    "ora": "21:15",
    "slot": "21:15",
    "capienza": 200,
+   "auto": 0,
    "biglietti": 0,
+   "persone": 0,
+   "tipi": {
+    "2": 0,
+    "3": 0,
+    "4": 0
+   },
    "incasso": 0,
    "annullati": 0
   },
@@ -238,7 +425,14 @@
    "ora": "22:15",
    "slot": "22:15",
    "capienza": 200,
+   "auto": 0,
    "biglietti": 0,
+   "persone": 0,
+   "tipi": {
+    "2": 0,
+    "3": 0,
+    "4": 0
+   },
    "incasso": 0,
    "annullati": 0
   },
@@ -248,7 +442,14 @@
    "ora": "23:15",
    "slot": "23:15",
    "capienza": 200,
+   "auto": 2,
    "biglietti": 2,
+   "persone": 8,
+   "tipi": {
+    "2": 0,
+    "3": 0,
+    "4": 2
+   },
    "incasso": 96.0,
    "annullati": 0
   },
@@ -258,7 +459,14 @@
    "ora": "23:59",
    "slot": "23:59",
    "capienza": 200,
+   "auto": 0,
    "biglietti": 0,
+   "persone": 0,
+   "tipi": {
+    "2": 0,
+    "3": 0,
+    "4": 0
+   },
    "incasso": 0,
    "annullati": 0
   },
@@ -268,7 +476,14 @@
    "ora": "20:15",
    "slot": "20:15",
    "capienza": 200,
+   "auto": 0,
    "biglietti": 0,
+   "persone": 0,
+   "tipi": {
+    "2": 0,
+    "3": 0,
+    "4": 0
+   },
    "incasso": 0,
    "annullati": 0
   },
@@ -278,7 +493,14 @@
    "ora": "21:15",
    "slot": "21:15",
    "capienza": 200,
+   "auto": 0,
    "biglietti": 0,
+   "persone": 0,
+   "tipi": {
+    "2": 0,
+    "3": 0,
+    "4": 0
+   },
    "incasso": 0,
    "annullati": 0
   },
@@ -288,7 +510,14 @@
    "ora": "22:15",
    "slot": "22:15",
    "capienza": 200,
+   "auto": 0,
    "biglietti": 0,
+   "persone": 0,
+   "tipi": {
+    "2": 0,
+    "3": 0,
+    "4": 0
+   },
    "incasso": 0,
    "annullati": 0
   },
@@ -298,7 +527,14 @@
    "ora": "23:15",
    "slot": "23:15",
    "capienza": 200,
+   "auto": 0,
    "biglietti": 0,
+   "persone": 0,
+   "tipi": {
+    "2": 0,
+    "3": 0,
+    "4": 0
+   },
    "incasso": 0,
    "annullati": 0
   },
@@ -308,7 +544,14 @@
    "ora": "23:59",
    "slot": "23:59",
    "capienza": 200,
+   "auto": 0,
    "biglietti": 0,
+   "persone": 0,
+   "tipi": {
+    "2": 0,
+    "3": 0,
+    "4": 0
+   },
    "incasso": 0,
    "annullati": 0
   },
@@ -318,7 +561,14 @@
    "ora": "20:15",
    "slot": "20:15",
    "capienza": 200,
+   "auto": 0,
    "biglietti": 0,
+   "persone": 0,
+   "tipi": {
+    "2": 0,
+    "3": 0,
+    "4": 0
+   },
    "incasso": 0,
    "annullati": 0
   },
@@ -328,7 +578,14 @@
    "ora": "21:15",
    "slot": "21:15",
    "capienza": 200,
+   "auto": 0,
    "biglietti": 0,
+   "persone": 0,
+   "tipi": {
+    "2": 0,
+    "3": 0,
+    "4": 0
+   },
    "incasso": 0,
    "annullati": 0
   },
@@ -338,7 +595,14 @@
    "ora": "22:15",
    "slot": "22:15",
    "capienza": 200,
+   "auto": 0,
    "biglietti": 0,
+   "persone": 0,
+   "tipi": {
+    "2": 0,
+    "3": 0,
+    "4": 0
+   },
    "incasso": 0,
    "annullati": 0
   },
@@ -348,7 +612,14 @@
    "ora": "23:15",
    "slot": "23:15",
    "capienza": 200,
+   "auto": 0,
    "biglietti": 0,
+   "persone": 0,
+   "tipi": {
+    "2": 0,
+    "3": 0,
+    "4": 0
+   },
    "incasso": 0,
    "annullati": 0
   },
@@ -358,7 +629,14 @@
    "ora": "23:59",
    "slot": "23:59",
    "capienza": 200,
+   "auto": 0,
    "biglietti": 0,
+   "persone": 0,
+   "tipi": {
+    "2": 0,
+    "3": 0,
+    "4": 0
+   },
    "incasso": 0,
    "annullati": 0
   }
@@ -366,46 +644,71 @@
  "tariffe": [
   {
    "codice": "I1",
-   "descrizione": "Tariffa 48 €",
+   "descrizione": "Auto da 4 · 48 €",
+   "persone_per_auto": 4,
+   "auto": 4,
    "biglietti": 4,
+   "persone": 16,
    "incasso": 192.0
   },
   {
    "codice": "I8",
-   "descrizione": "Tariffa 24 €",
+   "descrizione": "Auto da 2 · 24 €",
+   "persone_per_auto": 2,
+   "auto": 7,
    "biglietti": 7,
+   "persone": 14,
    "incasso": 168.0
   }
  ],
  "storico": [
   {
    "t": "2026-10-05T15:55",
+   "auto": 4,
    "biglietti": 4,
+   "persone": 10,
    "incasso": 120
   },
   {
    "t": "2026-10-05T17:43",
+   "auto": 10,
    "biglietti": 10,
+   "persone": 26,
    "incasso": 312
   },
   {
    "t": "2026-10-05T18:20",
+   "auto": 10,
    "biglietti": 10,
+   "persone": 26,
    "incasso": 312
   },
   {
    "t": "2026-10-05T18:22",
+   "auto": 11,
    "biglietti": 11,
+   "persone": 30,
    "incasso": 360
   },
   {
    "t": "2026-10-05T18:24",
+   "auto": 11,
    "biglietti": 11,
+   "persone": 30,
    "incasso": 360
   },
   {
    "t": "2026-10-05T18:40",
+   "auto": 11,
    "biglietti": 11,
+   "persone": 30,
+   "incasso": 360
+  },
+  {
+   "t": "2026-10-05T18:53",
+   "auto": 11,
+   "biglietti": 11,
+   "persone": 30,
    "incasso": 360.0
   }
  ],
