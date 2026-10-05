@@ -1,20 +1,19 @@
 """Scarica da 18Tickets i Riepiloghi mensili C1 di HORROR DAYS e li salva in data/c1/.
-
 Percorso sull'intranet di 18Tickets:
-  1. login su /intranet/ (campi employee[email] e employee[password]); la sessione scade presto,
-     quindi il login si rifà a ogni esecuzione
-  2. /intranet/siae_reports/show?from=01/MM/AAAA, filtro evento film_ids, pulsante "Stampa c1 mensile"
-  3. il report viene generato in modo asincrono: quando è pronto compare il popup
-     "Il tuo report è pronto!" con il link "clicca qui" a un PDF firmato su DigitalOcean Spaces,
-     scaricabile senza cookie
-
+1. login su /intranet/ (campi employee[email] e employee[password]); la sessione scade presto,
+   quindi il login si rifà a ogni esecuzione
+2. /intranet/siae_reports/index: si imposta la data 01/MM/AAAA nel campo "from" e si preme
+   "Mostra stato dei report per la data selezionata" (la sezione si carica via AJAX);
+   poi si sceglie l'evento nel menu film_ids e si preme "Stampa c1 mensile"
+3. il report viene generato in modo asincrono: quando è pronto compare il popup
+   "Il tuo report è pronto!" con il link "clicca qui" a un PDF firmato su DigitalOcean Spaces,
+   scaricabile senza cookie
 Configurazione solo da variabili d'ambiente (secret e variabili di GitHub):
   T18_USER, T18_PASSWORD   credenziali (obbligatorie)
   T18_LOGIN_URL            default https://drivein.18tickets.it/intranet/
   C1_MONTHS                default "10/2026,11/2026"
   C1_FILM_IDS              default "193028" (HORROR DAYS)
   C1_EVENTO                default "HORROR DAYS" (controllo sul contenuto del PDF)
-
 Se qualcosa va storto lo script esce con errore: il workflow si ferma, il sito resta
 all'ultimo aggiornamento valido e nella pagina dell'esecuzione trovi lo screenshot.
 """
@@ -58,30 +57,49 @@ def login(page):
         if otp:
             sys.exit("18Tickets chiede un codice di verifica (2FA): il login automatico non è possibile.")
         sys.exit("Login non riuscito: controlla T18_USER e T18_PASSWORD.")
-    print("Login effettuato")
+    print("Login effettuato", flush=True)
 
 
-def wait_report_link(page, mm, yyyy):
-    """Aspetta il link 'clicca qui' del popup e restituisce l'URL firmato del PDF del mese giusto."""
-    sel = f'a[href*="digitaloceanspaces"][href*="C1_{mm}_{yyyy}"]'
-    page.wait_for_selector(sel, state="attached", timeout=REPORT_TIMEOUT)
+def report_selector(mm, yyyy):
+    return f'a[href*="digitaloceanspaces"][href*="C1_{mm}_{yyyy}"]'
+
+
+def wait_report_link(page, mm, yyyy, before=0):
+    """Aspetta un NUOVO link 'clicca qui' del popup e restituisce l'URL firmato del PDF del mese giusto."""
+    sel = report_selector(mm, yyyy)
+    page.wait_for_function(
+        "([s, n]) => document.querySelectorAll(s).length > n",
+        arg=[sel, before],
+        timeout=REPORT_TIMEOUT,
+    )
     return page.locator(sel).last.get_attribute("href")
 
 
 def request_c1(page, mm, yyyy):
-    """Avvia la generazione del C1 mensile filtrato sull'evento."""
-    page.goto(f"{BASE}/siae_reports/show?from=01/{mm}/{yyyy}", wait_until="networkidle")
-    sel = page.locator('select[name="film_ids"], select[name="film_ids[]"]')
-    if sel.count():
-        sel.first.select_option(FILM_IDS.split(",")[0])
-    btn = page.get_by_role("button", name=re.compile(r"^\s*Stampa c1 mensile\s*$", re.I)) \
-        .or_(page.get_by_role("link", name=re.compile(r"^\s*Stampa c1 mensile\s*$", re.I)))
-    if btn.count():
-        btn.first.click()
-    else:
-        # chiamata diretta equivalente al pulsante
-        page.goto(f"{BASE}/siae_reports/print_c1month/A_{yyyy}_{mm}_01?film_ids={FILM_IDS}",
-                  wait_until="domcontentloaded")
+    """Avvia la generazione del C1 mensile filtrato sull'evento.
+    Restituisce quanti link al PDF del mese c'erano prima del clic,
+    oppure None se nel mese l'evento non compare (mese saltato)."""
+    page.goto(f"{BASE}/siae_reports/index", wait_until="networkidle")
+    # data al primo del mese, poi "Mostra stato dei report per la data selezionata" (AJAX)
+    page.locator("input#from").evaluate("(el, v) => { el.value = v; }", f"01/{mm}/{yyyy}")
+    page.locator('form[action*="siae_reports/show"] input[type=submit]').first.click()
+    # la sezione è aggiornata quando il menu eventi mostra il mese richiesto
+    page.locator('select[name="film_ids"] option', has_text=f"{mm}/{yyyy}").first \
+        .wait_for(state="attached", timeout=60_000)
+
+    film_id = FILM_IDS.split(",")[0]
+    if not page.locator(f'select[name="film_ids"] option[value="{film_id}"]').count():
+        print(f"{mm}/{yyyy}: {EVENTO} non compare tra gli eventi del mese, salto.", flush=True)
+        return None
+    page.locator('select[name="film_ids"]').first.select_option(film_id)
+
+    before = page.locator(report_selector(mm, yyyy)).count()
+    btn = page.get_by_role("button", name=re.compile(r"^\s*Stampa c1 mensile\s*$", re.I))
+    if not btn.count():
+        sys.exit(f"{mm}/{yyyy}: pulsante 'Stampa c1 mensile' non trovato nella pagina dei Riepiloghi.")
+    btn.first.click()
+    print(f"{mm}/{yyyy}: richiesta C1 mensile inviata, attendo il report...", flush=True)
+    return before
 
 
 def save_pdf(url, target):
@@ -99,7 +117,7 @@ def save_pdf(url, target):
         tmp.unlink(missing_ok=True)
         sys.exit(f"{target.name}: {evento} pagine di {EVENTO} su {pages}. Il filtro evento non ha funzionato.")
     tmp.replace(target)
-    print(f"Scaricato {target} ({pages} spettacoli)")
+    print(f"Scaricato {target} ({pages} spettacoli)", flush=True)
 
 
 def main():
@@ -111,8 +129,10 @@ def main():
             login(page)
             for mese in MONTHS:
                 mm, yyyy = mese.split("/")
-                request_c1(page, mm, yyyy)
-                url = wait_report_link(page, mm, yyyy)
+                before = request_c1(page, mm, yyyy)
+                if before is None:
+                    continue
+                url = wait_report_link(page, mm, yyyy, before)
                 save_pdf(url, OUT / f"Riepilogo_mensile_C1_{mm}_{yyyy}.pdf")
         except PWTimeout as e:
             page.screenshot(path="fetch_error.png", full_page=True)
