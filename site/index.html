@@ -107,6 +107,8 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding:28px 0 40px;colo
 .next .info b{color:var(--white);font-weight:500}
 .next .prog{flex-basis:100%;height:3px;background:var(--black-3);overflow:hidden}
 .next .prog i{display:block;height:100%;width:0;background:var(--red);transition:width 1s linear}
+.next .btn{cursor:pointer;border-color:var(--red)}
+.next .btn[disabled]{opacity:.5;cursor:wait}
 
 @media (max-width:860px){
   .kpis{grid-template-columns:1fr 1fr}.grid2,.checks{grid-template-columns:1fr}
@@ -131,10 +133,11 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding:28px 0 40px;colo
   <div class="hero">
     <div class="kicker">Horror Drive-In · Non fermatevi · Pozzuoli</div>
     <h1>Biglietti<br>venduti</h1>
-    <p class="sub">Dati dai Riepiloghi mensili C1 SIAE della cassa 18Tickets, aggiornati ogni ora. Il C1 è cumulativo: ogni aggiornamento sostituisce il precedente.</p>
+    <p class="sub">Dati dai Riepiloghi mensili C1 SIAE della cassa 18Tickets, aggiornati ogni ora o quando premi <b>Aggiorna ora</b>. Il C1 è cumulativo: ogni aggiornamento sostituisce il precedente.</p>
     <div class="next" aria-live="polite">
       <div><div class="l">Prossimo aggiornamento tra</div><div class="t" id="cd">--:--</div></div>
       <div class="info" id="cdInfo">Calcolo in corso…</div>
+      <button class="btn" id="btnAgg" type="button">Aggiorna ora</button>
       <div class="prog"><i id="cdBar"></i></div>
     </div>
     <div class="err" id="err"></div>
@@ -281,8 +284,9 @@ document.getElementById("filters").addEventListener("click",e=>{const b=e.target
 
 /* ---- countdown al prossimo aggiornamento ----
    Deve corrispondere al cron del workflow: "5 7-23 * * *" (minuto 5, ore 7-23 UTC).
-   BUFFER = minuti stimati tra l'avvio del workflow e il sito aggiornato su Vercel. */
-const SCHED={minute:5,fromUTC:7,toUTC:23,buffer:6};
+   BUFFER = minuti stimati tra l'orario del cron e il sito aggiornato su Vercel: GitHub avvia i run
+   programmati con 15-20 minuti di ritardo, più circa 2 minuti di workflow e deploy. */
+const SCHED={minute:5,fromUTC:7,toUTC:23,buffer:20};
 const pad=n=>String(n).padStart(2,"0");
 function runAt(base){ // prossimo avvio del workflow >= base
   const t=new Date(base);t.setUTCSeconds(0,0);
@@ -292,8 +296,8 @@ function runAt(base){ // prossimo avvio del workflow >= base
     t.setUTCHours(t.getUTCHours()+1,0);
   }
 }
-function nextReady(now){ // prossimo giro non ancora arrivato sul sito (attesa massima 20 minuti)
-  const agg=lastAgg?new Date(lastAgg):new Date(0),MAXWAIT=20*60000;
+function nextReady(now){ // prossimo giro non ancora arrivato sul sito (attesa massima 40 minuti)
+  const agg=lastAgg?new Date(lastAgg):new Date(0),MAXWAIT=40*60000;
   let r=runAt(new Date(now.getTime()-MAXWAIT));
   while(now>=r&&(agg>=r||now-r>MAXWAIT))r=runAt(new Date(r.getTime()+60000));
   return {run:r,ready:new Date(r.getTime()+SCHED.buffer*60000)};
@@ -301,6 +305,7 @@ function nextReady(now){ // prossimo giro non ancora arrivato sul sito (attesa m
 let waiting=false,lastAgg=null,pollTimer=null;
 const hhmm=d=>d.toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit",timeZone:"Europe/Rome"});
 function tick(){
+  if(manualTick())return;
   const now=new Date(),{run,ready}=nextReady(now);
   const left=Math.max(0,Math.round((ready-now)/1000));
   const el=document.getElementById("cd"),info=document.getElementById("cdInfo"),bar=document.getElementById("cdBar"),mini=document.getElementById("cdMini");
@@ -327,6 +332,54 @@ async function load(){
   try{const r=await fetch("data.json?ts="+Date.now(),{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);const j=await r.json();if(j.aggiornato!==lastAgg){lastAgg=j.aggiornato;render(j);tick()};document.getElementById("err").style.display="none"}
   catch(e){const el=document.getElementById("err");el.style.display="block";el.textContent="Impossibile caricare i dati del report ("+e.message+")."}
 }
+/* ---- pulsante "Aggiorna ora": avvia il workflow tramite /api/aggiorna ----
+   Dal clic ai dati sul sito passano circa 1-2 minuti (download C1, commit, deploy Vercel). */
+const MANUAL_MAX=8*60000;
+let manual=null; // {since: Date, msg: string}
+const btn=document.getElementById("btnAgg");
+function manualTick(){
+  if(!manual)return false;
+  const el=document.getElementById("cd"),info=document.getElementById("cdInfo"),bar=document.getElementById("cdBar"),mini=document.getElementById("cdMini");
+  const now=new Date(),s=Math.round((now-manual.since)/1000);
+  if(lastAgg&&new Date(lastAgg)>=new Date(manual.since.getTime()-60000)){manualEnd(`Dati aggiornati alle <b>${dt(lastAgg)}</b>.`);return false}
+  if(now-manual.since>MANUAL_MAX){manualEnd("L'aggiornamento ci sta mettendo più del solito: la pagina mostra gli ultimi dati validi e si aggiorna da sola appena arrivano.");return false}
+  el.textContent="In arrivo…";el.classList.add("busy");mini.textContent="ORA";
+  info.innerHTML=`${manual.msg} In corso da <b>${Math.floor(s/60)}:${pad(s%60)}</b>, di solito servono 1-2 minuti. <b>Non serve ricaricare la pagina.</b>`;
+  bar.style.width=Math.min(100,s/120*100).toFixed(1)+"%";
+  return true;
+}
+function manualStart(since,msg){
+  manual={since,msg};btn.disabled=true;btn.textContent="Aggiornamento…";
+  clearInterval(pollTimer);pollTimer=setInterval(()=>{load();checkRun()},15000);tick();
+}
+function manualEnd(msg){
+  manual=null;btn.disabled=false;btn.textContent="Aggiorna ora";
+  clearInterval(pollTimer);pollTimer=setInterval(load,5*60*1000);waiting=false;
+  const err=document.getElementById("err");
+  if(msg){err.style.display="block";err.style.borderColor="var(--line)";err.style.background="transparent";err.innerHTML=msg;setTimeout(()=>{err.style.display="none";err.removeAttribute("style")},15000)}
+}
+async function checkRun(){
+  try{
+    const r=await fetch("api/aggiorna",{cache:"no-store"});
+    if(r.status===503){btn.style.display="none";return null}
+    const j=await r.json();
+    if(manual&&j.esito&&j.esito!=="success"&&!j.inCorso&&new Date(j.avviato)>=new Date(manual.since.getTime()-60000))
+      manualEnd("Aggiornamento non riuscito su 18Tickets: il sito mostra gli ultimi dati validi. Riprova tra qualche minuto.");
+    return j;
+  }catch(e){return null}
+}
+btn.addEventListener("click",async()=>{
+  btn.disabled=true;
+  try{
+    const r=await fetch("api/aggiorna",{method:"POST",cache:"no-store"});
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(j.errore||"HTTP "+r.status);
+    manualStart(new Date(j.avviatoOra?Date.now():j.avviato),j.avviatoOra?"Aggiornamento avviato.":"C'era già un aggiornamento in corso.");
+  }catch(e){manualEnd(`Impossibile avviare l'aggiornamento (${e.message}).`)}
+});
+// all'apertura: se un aggiornamento (anche quello orario) è già in corso, lo si segue
+checkRun().then(j=>{if(j&&j.inCorso&&!manual)manualStart(new Date(j.avviato),"Aggiornamento in corso.")});
+
 load();pollTimer=setInterval(load,5*60*1000);tick();setInterval(tick,1000);
 </script>
 </body>

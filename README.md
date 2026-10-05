@@ -11,6 +11,13 @@ Ogni ora, dalle 9 alle 24, GitHub Actions:
 2. aggiorna `data/HorrorDays_Vendite.xlsx` e `site/data.json` (`scripts/build_report.py`), con lo storico conservato;
 3. salva le modifiche nel repository: Vercel ripubblica il sito da solo.
 
+GitHub avvia i giri orari con 15-20 minuti di ritardo. Per avere i dati del momento c'è il pulsante
+**Aggiorna ora** sul sito (`api/aggiorna.js`): avvia subito il workflow e in 1-2 minuti la pagina mostra i nuovi dati
+senza bisogno di ricaricarla.
+
+I numeri sono quelli fiscali del C1: biglietti emessi e incasso lordo **al netto degli annullati**,
+quindi solo acquisti andati a buon fine. Gli omaggi, se ci sono, compaiono come tariffa a 0 €.
+
 Se il download fallisce il workflow si ferma, il sito resta all'ultimo aggiornamento valido
 e GitHub ti manda un'email. Nella pagina dell'esecuzione trovi lo screenshot dell'errore.
 
@@ -24,6 +31,7 @@ data/c1/                                PDF C1 (uno per mese, sovrascritti a ogn
 data/HorrorDays_Vendite.xlsx            report Excel (il foglio Tariffe si può modificare)
 site/                                   sito pubblicato su Vercel
 middleware.js                           password del sito (Basic Auth)
+api/aggiorna.js                         pulsante "Aggiorna ora" (avvia il workflow)
 ```
 
 ## Configurazione (una volta sola)
@@ -40,6 +48,9 @@ middleware.js                           password del sito (Basic Auth)
    per tutto il sito, `data.json` compreso. In Vercel > Settings > Environment Variables crea `REPORT_USER` e
    `REPORT_PASSWORD` (ambiente Production) e ripubblica. Senza le due variabili il sito risponde 503.
    In Settings > Environments > Production la branch deve essere `main`. Tieni privato anche il repository GitHub.
+   Per il pulsante "Aggiorna ora" crea su GitHub un token fine-grained (Settings > Developer settings >
+   Personal access tokens > Fine-grained tokens) limitato al repository HorrorDays con permesso
+   **Actions: Read and write**, e salvalo in Vercel come variabile `GH_DISPATCH_TOKEN`. Senza token il pulsante non compare.
 7. **Prova.** In Actions > Aggiorna report vendite > Run workflow lancia un primo giro a mano.
 
 ## Font e logo
