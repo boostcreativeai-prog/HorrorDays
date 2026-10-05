@@ -86,7 +86,7 @@ tr.zero td{color:#a39d9599}
 .filters button[aria-pressed=true]{background:var(--red);border-color:var(--red)}
 .tscroll{overflow-x:auto}
 
-.tipi{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:20px}
+.tipi{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:20px}
 .tipo{background:var(--black-2);border:1px solid var(--line-soft);border-top:3px solid var(--c);padding:20px}
 .tipo .l{font:400 15px/1 var(--f-display);letter-spacing:.12em;text-transform:uppercase}
 .tipo .l small{display:block;font:400 13px/1.4 var(--f-body);letter-spacing:0;text-transform:none;color:var(--muted);margin-top:6px}
@@ -126,7 +126,7 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding:28px 0 40px;colo
 .next .prog{flex-basis:100%;height:3px;background:var(--black-3);overflow:hidden}
 .next .prog i{display:block;height:100%;width:0;background:var(--red);transition:width 1s linear}
 .next .btn{cursor:pointer;border-color:var(--red)}
-.next .btn[disabled]{opacity:.5;cursor:wait}
+.next .btn[disabled]{background:#2a2727;border-color:#3d3939;color:#7d7770;cursor:not-allowed;pointer-events:none}
 
 @media (max-width:860px){
   .kpis{grid-template-columns:1fr 1fr}.grid2,.checks,.tipi,.peaks{grid-template-columns:1fr}
@@ -164,7 +164,7 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding:28px 0 40px;colo
 
   <section>
     <h2>Tipologie <em>di ticket</em></h2>
-    <p class="h-sub">Ogni biglietto è un'auto: 24 € = 2 persone, 36 € = 3 persone, 48 € = 4 persone</p>
+    <p class="h-sub">Ogni biglietto è un'auto: 24 € = 2 persone, 36 € = 3 persone, 48 € = 4 persone, 60 € = 5 persone</p>
     <div class="tipi" id="tipi"></div>
     <div class="panel"><h3>Auto per serata e tipologia</h3><div class="legend" id="legTipi"></div><div class="chart"><canvas id="cTipiSerate"></canvas></div></div>
   </section>
@@ -253,9 +253,14 @@ Chart.defaults.plugins.legend.display=false;Chart.defaults.maintainAspectRatio=f
 
 function draw(id,cfg){charts[id]?.destroy();charts[id]=new Chart(document.getElementById(id),cfg)}
 
-// 1 biglietto = 1 auto; le persone dipendono dalla tipologia (24 € = 2, 36 € = 3, 48 € = 4)
-const TIPO_COL={2:C.amber,3:"#c9c2b8",4:C.red};
-const TIPO_FB=[{persone:2,prezzo:24},{persone:3,prezzo:36},{persone:4,prezzo:48}];
+// 1 biglietto = 1 auto; le persone dipendono dalla tipologia (24 € = 2, 36 € = 3, 48 € = 4, 60 € = 5)
+const TIPO_COL={2:C.amber,3:"#c9c2b8",4:C.red,5:"#8f1a14"};
+const TIPO_FB=[{persone:2,prezzo:24},{persone:3,prezzo:36},{persone:4,prezzo:48},{persone:5,prezzo:60}];
+// tipologie dai dati, completate con quelle note che non hanno ancora vendite (es. dati generati prima del ticket da 60 €)
+const tipologie=D=>{const t=[...(D?.tipologie||[])];
+  for(const f of TIPO_FB)if(!t.some(x=>x.persone===f.persone))t.push({...f,etichetta:"Auto da "+f.persone,auto:0,persone_tot:0,incasso:0});
+  return t.sort((a,b)=>a.persone-b.persone)};
+const tipiP=()=>tipologie(DATA).map(t=>t.persone); // es. [2,3,4,5]
 let heatMode="auto";
 // compatibilità con i dati generati prima di auto/persone
 const auto=s=>s.auto??s.biglietti??0;
@@ -263,7 +268,7 @@ const pers=s=>s.persone??0;
 
 function render(D){
   DATA=D;const T=D.totali,S=D.storico,last=S[S.length-1],prev=S[S.length-2];
-  const TIPI=D.tipologie||TIPO_FB.map(t=>({...t,etichetta:"Auto da "+t.persone,auto:0,persone_tot:0,incasso:0}));
+  const TIPI=tipologie(D);
   document.getElementById("src").textContent="Fonte: "+D.fonte.join(", ");
   const delta=(a,b,f)=>prev&&a!=null&&b!=null?`<span class="${a-b>0?"up":""}">${a-b>0?"+":""}${f(a-b)}</span> dall'ultimo aggiornamento`:"Prima estrazione";
   const A=auto(T),P=pers(T);
@@ -333,7 +338,7 @@ function heat(){
     h+=`<div class="day">${ddmm(dd)}<span>${GG[wd]}</span></div>`;
     for(const sl of SLOTS){const s=day.find(x=>x.slot===sl);const n=s?val(s):null;
       const a=n?0.25+0.75*n/max:0;
-      const tip=s?`${ddmm(dd)} ${s.ora} · ${auto(s)} auto su ${s.capienza} · ${pers(s)} persone`+(s.tipi?` (da 2: ${s.tipi[2]||0}, da 3: ${s.tipi[3]||0}, da 4: ${s.tipi[4]||0})`:"")+` · ${eur(s.incasso)}`:"";
+      const tip=s?`${ddmm(dd)} ${s.ora} · ${auto(s)} auto su ${s.capienza} · ${pers(s)} persone`+(s.tipi?` (${tipiP().map(p=>`da ${p}: ${s.tipi[p]||0}`).join(", ")})`:"")+` · ${eur(s.incasso)}`:"";
       h+=n===null?`<div class="cell" title="Nessuno spettacolo">·</div>`:`<div class="cell ${n?"on":""}" style="${n?`background:rgba(212,58,49,${a.toFixed(2)})`:""}" title="${tip}">${n}</div>`}
     h+=`<div class="cell tot">${day.reduce((a,s)=>a+val(s),0)}</div>`}
   document.getElementById("heat").innerHTML=h;
@@ -366,7 +371,7 @@ function vendite(){
   draw("cOre",{type:"bar",data:{labels:P.ore.map(x=>String(x.ora).padStart(2,"0")),datasets:[{data:P.ore.map(x=>x.auto),backgroundColor:C.amber,borderRadius:2}]},
     options:{scales:{y:{beginAtZero:true,ticks:{precision:0}},x:{grid:{display:false}}},plugins:{tooltip:{callbacks:{title:c=>`Dalle ${c[0].label}:00 alle ${String((+c[0].label+1)%24).padStart(2,"0")}:00`,label:c=>{const x=P.ore[c.dataIndex];return `${x.auto} auto · ${x.persone} persone · ${eur(x.incasso)}`}}}}}});
   const mv=[...D.movimenti].reverse(),shown=regAll?mv:mv.slice(0,15);
-  const tipo=m=>[2,3,4].filter(p=>m.tipi?.[p]).map(p=>`${m.tipi[p]>0?"+":""}${m.tipi[p]} da ${p}`).join(", ")||"–";
+  const tipo=m=>tipiP().filter(p=>m.tipi?.[p]).map(p=>`${m.tipi[p]>0?"+":""}${m.tipi[p]} da ${p}`).join(", ")||"–";
   const sg=v=>`${v>0?"+":""}${int(v)}`;
   document.getElementById("tReg").innerHTML=`<tr><th>Venduto tra</th><th>Spettacolo</th><th class="n">Auto</th><th>Tipologia</th><th class="n">Persone</th><th class="n">Incasso</th></tr>`+
     (shown.length?shown.map(m=>`<tr><td>${finestra(m)}</td><td>${GG[d(m.data).getDay()]} ${ddmm(m.data)} · ${m.ora}</td><td class="n ${m.auto>0?"up":""}">${sg(m.auto)}</td><td>${tipo(m)}</td><td class="n">${sg(m.persone)}</td><td class="n">${eur(m.incasso)}</td></tr>`).join(""):`<tr><td colspan="6">Ancora nessuna vendita registrata</td></tr>`);
@@ -378,8 +383,8 @@ document.getElementById("regMore").addEventListener("click",()=>{regAll=!regAll;
 function showsTable(){
   const rows=DATA.spettacoli.filter(s=>filter==="tutte"||s.data===filter);
   const tp=(s,p)=>s.tipi?int(s.tipi[p]||0):"–";
-  document.getElementById("tShows").innerHTML=`<tr><th>Serata</th><th>Turno</th><th class="n">Auto</th><th class="n">Da 2</th><th class="n">Da 3</th><th class="n">Da 4</th><th class="n">Persone</th><th class="n">Incasso</th><th>Occupazione auto</th><th>Stato</th></tr>`+
-    rows.map(s=>{const n=auto(s),o=s.capienza?n/s.capienza:0;return `<tr class="${n?"":"zero"}"><td>${GG[d(s.data).getDay()]} ${ddmm(s.data)}</td><td>${s.ora}</td><td class="n">${int(n)}</td><td class="n">${tp(s,2)}</td><td class="n">${tp(s,3)}</td><td class="n">${tp(s,4)}</td><td class="n">${int(pers(s))}</td><td class="n">${eur(s.incasso)}</td>
+  document.getElementById("tShows").innerHTML=`<tr><th>Serata</th><th>Turno</th><th class="n">Auto</th>${tipiP().map(p=>`<th class="n">Da ${p}</th>`).join("")}<th class="n">Persone</th><th class="n">Incasso</th><th>Occupazione auto</th><th>Stato</th></tr>`+
+    rows.map(s=>{const n=auto(s),o=s.capienza?n/s.capienza:0;return `<tr class="${n?"":"zero"}"><td>${GG[d(s.data).getDay()]} ${ddmm(s.data)}</td><td>${s.ora}</td><td class="n">${int(n)}</td>${tipiP().map(p=>`<td class="n">${tp(s,p)}</td>`).join("")}<td class="n">${int(pers(s))}</td><td class="n">${eur(s.incasso)}</td>
       <td><div style="display:flex;align-items:center;gap:10px"><div class="bar" style="flex:1"><i style="width:${Math.min(100,o*100)}%"></i></div><span style="min-width:64px;text-align:right">${n}/${s.capienza}</span></div></td>
       <td><span class="pill ${n?"on":""}">${n?"Venduto":"Zero vendite"}</span></td></tr>`}).join("");
 }
@@ -438,15 +443,19 @@ async function load(){
   catch(e){const el=document.getElementById("err");el.style.display="block";el.textContent="Impossibile caricare i dati del report ("+e.message+")."}
 }
 /* ---- pulsante "Aggiorna ora": avvia il workflow tramite /api/aggiorna ----
-   Dal clic ai dati sul sito passano circa 1-2 minuti (download C1, commit, deploy Vercel). */
+   Dal clic ai dati sul sito passano circa 1-2 minuti (download C1, commit, deploy Vercel).
+   Il pulsante resta grigio e non cliccabile per TUTTI finché l'aggiornamento non arriva sul sito:
+   ogni pagina aperta controlla lo stato ogni 20 secondi, quindi vede anche gli aggiornamenti
+   avviati da altri o quello orario. Il server comunque non avvia un secondo giro se uno è già in corso. */
+const STATE_POLL=20000;
 const MANUAL_MAX=8*60000;
-let manual=null; // {since: Date, msg: string}
+let manual=null; // {since: Date, msg: string, prev: "aggiornato" dei dati presenti all'avvio}
 const btn=document.getElementById("btnAgg");
 function manualTick(){
   if(!manual)return false;
   const el=document.getElementById("cd"),info=document.getElementById("cdInfo"),bar=document.getElementById("cdBar"),mini=document.getElementById("cdMini");
-  const now=new Date(),s=Math.round((now-manual.since)/1000);
-  if(lastAgg&&new Date(lastAgg)>=new Date(manual.since.getTime()-60000)){manualEnd(`Dati aggiornati alle <b>${dt(lastAgg)}</b>.`);return false}
+  const now=new Date(),s=Math.max(0,Math.round((now-manual.since)/1000)); // mai negativo se gli orologi differiscono
+  if(lastAgg&&lastAgg!==manual.prev&&new Date(lastAgg)>=new Date(manual.since.getTime()-60000)){manualEnd(`Dati aggiornati alle <b>${dt(lastAgg)}</b>.`);return false}
   if(now-manual.since>MANUAL_MAX){manualEnd("L'aggiornamento ci sta mettendo più del solito: la pagina mostra gli ultimi dati validi e si aggiorna da sola appena arrivano.");return false}
   el.textContent="In arrivo…";el.classList.add("busy");mini.textContent="ORA";
   info.innerHTML=`${manual.msg} In corso da <b>${Math.floor(s/60)}:${pad(s%60)}</b>, di solito servono 1-2 minuti. <b>Non serve ricaricare la pagina.</b>`;
@@ -454,11 +463,11 @@ function manualTick(){
   return true;
 }
 function manualStart(since,msg){
-  manual={since,msg};btn.disabled=true;btn.textContent="Aggiornamento…";
+  manual={since,msg,prev:lastAgg};btn.disabled=true;btn.textContent="Aggiornamento in corso…";btn.title="Attendi la fine dell'aggiornamento";
   clearInterval(pollTimer);pollTimer=setInterval(()=>{load();checkRun()},15000);tick();
 }
 function manualEnd(msg){
-  manual=null;btn.disabled=false;btn.textContent="Aggiorna ora";
+  manual=null;btn.disabled=false;btn.textContent="Aggiorna ora";btn.title="";
   clearInterval(pollTimer);pollTimer=setInterval(load,5*60*1000);waiting=false;
   const err=document.getElementById("err");
   if(msg){err.style.display="block";err.style.borderColor="var(--line)";err.style.background="transparent";err.innerHTML=msg;setTimeout(()=>{err.style.display="none";err.removeAttribute("style")},15000)}
@@ -474,7 +483,8 @@ async function checkRun(){
   }catch(e){return null}
 }
 btn.addEventListener("click",async()=>{
-  btn.disabled=true;
+  if(btn.disabled||manual)return;
+  btn.disabled=true;btn.textContent="Avvio…";
   try{
     const r=await fetch("api/aggiorna",{method:"POST",cache:"no-store"});
     const j=await r.json().catch(()=>({}));
@@ -482,8 +492,14 @@ btn.addEventListener("click",async()=>{
     manualStart(new Date(j.avviatoOra?Date.now():j.avviato),j.avviatoOra?"Aggiornamento avviato.":"C'era già un aggiornamento in corso.");
   }catch(e){manualEnd(`Impossibile avviare l'aggiornamento (${e.message}).`)}
 });
-// all'apertura: se un aggiornamento (anche quello orario) è già in corso, lo si segue
-checkRun().then(j=>{if(j&&j.inCorso&&!manual)manualStart(new Date(j.avviato),"Aggiornamento in corso.")});
+// all'apertura e poi ogni 20 secondi: se un aggiornamento (di chiunque, o quello orario) è in corso, lo si segue
+async function watchRun(){
+  if(manual||document.hidden||btn.style.display==="none")return;
+  const j=await checkRun();
+  if(j&&j.inCorso&&!manual)manualStart(new Date(j.avviato),"Aggiornamento in corso (avviato da un altro utente o automatico).");
+}
+watchRun();setInterval(watchRun,STATE_POLL);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)watchRun()});
 
 load();pollTimer=setInterval(load,5*60*1000);tick();setInterval(tick,1000);
 </script>

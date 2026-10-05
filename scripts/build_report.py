@@ -10,6 +10,7 @@ from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.formatting.rule import ColorScaleRule, FormulaRule
 from openpyxl.chart import BarChart, PieChart, LineChart, Reference
 from openpyxl.chart.label import DataLabelList
+from openpyxl.utils import get_column_letter
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--c1", default="data/c1")
@@ -21,14 +22,14 @@ OUT = PREV = args.xlsx
 SNAP = dt.datetime.now(ZoneInfo("Europe/Rome")).replace(tzinfo=None, second=0, microsecond=0)
 
 # Ogni titolo d'accesso è un'auto (la capienza del C1 è in auto). Le persone dipendono dal prezzo:
-# 24 € = 2 persone, 36 € = 3, 48 € = 4, cioè 12 € a persona. Prezzi diversi si definiscono
+# 24 € = 2 persone, 36 € = 3, 48 € = 4, 60 € = 5, cioè 12 € a persona. Prezzi diversi si definiscono
 # nel foglio Tariffe (colonna "Persone per auto"), altrimenti finiscono tra le anomalie.
-PERSONE_PER_PREZZO = {24.0: 2, 36.0: 3, 48.0: 4}
+PERSONE_PER_PREZZO = {24.0: 2, 36.0: 3, 48.0: 4, 60.0: 5}
 EURO_A_PERSONA = 12.0
 # Capienza reale del drive-in: 100 auto per turno (il C1 riporta 200, che non è il limite effettivo).
 # Le persone non hanno un limite proprio: dipendono dalle auto.
 CAPIENZA_AUTO = 100
-TIPI = sorted(set(PERSONE_PER_PREZZO.values()))  # 2, 3, 4
+TIPI = sorted(set(PERSONE_PER_PREZZO.values()))  # 2, 3, 4, 5
 
 pdfs = sorted(glob.glob(os.path.join(args.c1, "*.pdf")) + glob.glob(os.path.join(args.c1, "*.PDF")))
 if not pdfs:
@@ -274,22 +275,28 @@ for c in range(1, 8):
     x = wsY.cell(row=yr, column=c); x.font = Font(name="Arial", size=10, bold=True); x.border = Border(top=Side(style="thin", color="1F2430"))
 for c, f in ((4, INT), (5, INT), (6, EUR), (7, PCT)): wsY.cell(row=yr, column=c).number_format = f
 
-# Spettacoli
+# Spettacoli: colonne fisse, poi una colonna per tipologia, poi il resto (le lettere dipendono da TIPI)
 nS = len(shows); SL = nS + 1
-header(wsS, ["ID", "Data", "Giorno settimana", "Ora", "Capienza (auto)", "Auto", "Persone", "Auto da 2", "Auto da 3",
-             "Auto da 4", "Annullati", "Incasso lordo", "Imponibile IVA", "IVA", "Occupazione % (auto)", "Stato", "Chiave ordinamento"],
-       [16, 12, 14, 8, 11, 9, 10, 10, 10, 10, 10, 13, 14, 11, 13, 14, 10])
+L = get_column_letter
+NTP = len(TIPI)
+cS = {k: L(8 + NTP + j) for j, k in enumerate(["ann", "inc", "imp", "iva", "occ", "stato", "chiave"])}
+header(wsS, ["ID", "Data", "Giorno settimana", "Ora", "Capienza (auto)", "Auto", "Persone"] + [f"Auto da {p}" for p in TIPI]
+       + ["Annullati", "Incasso lordo", "Imponibile IVA", "IVA", "Occupazione % (auto)", "Stato", "Chiave ordinamento"],
+       [16, 12, 14, 8, 11, 9, 10] + [10] * NTP + [10, 13, 14, 11, 13, 14, 10])
 for i, s in enumerate(shows, 2):
     vals = [s["id"], s["date"], '='+'CHOOSE(WEEKDAY(B,2),"Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato","Domenica")'.replace('B,','B'+str(i)+','), s["time"], s["cap"],
             f"=SUMIF({V('A')},A{i},{V('H')})", f"=SUMIF({V('A')},A{i},{V('P')})"] + \
            [f"=SUMIFS({V('H')},{V('A')},A{i},{V('O')},{p})" for p in TIPI] + \
            [f"=SUMIF({V('A')},A{i},{V('I')})", f"=SUMIF({V('A')},A{i},{V('J')})", f"=SUMIF({V('A')},A{i},{V('L')})",
             f"=SUMIF({V('A')},A{i},{V('M')})", f'=IF(E{i}>0,F{i}/E{i},0)',
-            f'=IF(F{i}>0,"Venduto","Zero vendite")', f"=F{i}+L{i}/100000+(1000-ROW())/100000000"]
+            f'=IF(F{i}>0,"Venduto","Zero vendite")', f"=F{i}+{cS['inc']}{i}/100000+(1000-ROW())/100000000"]
     for c, v in enumerate(vals, 1): wsS.cell(row=i, column=c, value=v)
-body(wsS, nS, 17, {2: DATE, 4: TIME, 5: INT, 6: INT, 7: INT, 8: INT, 9: INT, 10: INT, 11: INT, 12: EUR, 13: EUR, 14: EUR, 15: PCT})
-wsS.column_dimensions["Q"].hidden = True
-wsS.conditional_formatting.add(f"P2:P{SL}", FormulaRule(formula=[f'P2="Venduto"'], font=Font(color="1E6B3A", bold=True)))
+NSC = 7 + NTP + 7
+body(wsS, nS, NSC, {2: DATE, 4: TIME, **{c: INT for c in range(5, 9 + NTP)}, 9 + NTP: EUR, 10 + NTP: EUR, 11 + NTP: EUR, 12 + NTP: PCT})
+wsS.column_dimensions[cS["chiave"]].hidden = True
+st = cS["stato"]
+wsS.conditional_formatting.add(f"{st}2:{st}{SL}", FormulaRule(formula=[f'{st}2="Venduto"'], font=Font(color="1E6B3A", bold=True)))
+SP = lambda k: f"Spettacoli!${cS[k]}$2:${cS[k]}${SL}"
 
 # Per tariffa
 header(wsP, ["Codice titolo", "Descrizione", "Persone per auto", "N° auto", "Persone", "Incasso", "% sull'incasso totale"], [14, 26, 15, 10, 10, 14, 18])
@@ -413,7 +420,7 @@ kpis = [
     ("Persone", f"=SUM({V('P')})", INT),
     ("Persone per auto (media)", f"=IF(SUM({V('H')})>0,SUM({V('P')})/SUM({V('H')}),0)", "0.00"),
     ("Occupazione media (auto)", f"=IF(SUM(Spettacoli!E2:E{SL})>0,SUM(Spettacoli!F2:F{SL})/SUM(Spettacoli!E2:E{SL}),0)", "0.00%"),
-    ("Spettacoli con vendite / totali", f'=COUNTIF(Spettacoli!P2:P{SL},"Venduto")&" / "&COUNTA(Spettacoli!A2:A{SL})', "@"),
+    ("Spettacoli con vendite / totali", f'=COUNTIF({SP("stato")},"Venduto")&" / "&COUNTA(Spettacoli!A2:A{SL})', "@"),
     ("Auto per tipologia", "=" + tipi_txt, "@"),
     ("Prezzo medio per auto", f"=IF(SUM({V('H')})>0,SUM({V('J')})/SUM({V('H')}),0)", EUR),
     ("Ultimo aggiornamento", f"=MAX(Storico!A2:A{HL})", "DD/MM/YYYY HH:MM"),
@@ -436,12 +443,12 @@ for j, h in enumerate(["Data", "Ora", "Auto", "Persone", "Incasso"]):
     c = dash.cell(row=5, column=11 + j, value=h); c.fill = HDR; c.font = HF; c.alignment = Alignment(horizontal="center")
 for k in range(1, 6):
     r = 5 + k
-    m = f"MATCH(LARGE(Spettacoli!$Q$2:$Q${SL},{k}),Spettacoli!$Q$2:$Q${SL},0)"
+    m = f"MATCH(LARGE({SP('chiave')},{k}),{SP('chiave')},0)"
     dash.cell(row=r, column=11, value=f"=INDEX(Spettacoli!$B$2:$B${SL},{m})").number_format = DATE
     dash.cell(row=r, column=12, value=f"=INDEX(Spettacoli!$D$2:$D${SL},{m})").number_format = TIME
     dash.cell(row=r, column=13, value=f"=INDEX(Spettacoli!$F$2:$F${SL},{m})").number_format = INT
     dash.cell(row=r, column=14, value=f"=INDEX(Spettacoli!$G$2:$G${SL},{m})").number_format = INT
-    dash.cell(row=r, column=15, value=f"=INDEX(Spettacoli!$L$2:$L${SL},{m})").number_format = EUR
+    dash.cell(row=r, column=15, value=f"=INDEX({SP('inc')},{m})").number_format = EUR
     for c in range(11, 16):
         x = dash.cell(row=r, column=c); x.font = BF; x.border = Border(bottom=thin)
         if k % 2 == 0: x.fill = ALT
@@ -451,7 +458,7 @@ ch1 = BarChart(); ch1.type = "col"; ch1.grouping = "stacked"; ch1.overlap = 100
 ch1.title = "Auto per serata e tipologia"; ch1.style = 2
 ch1.add_data(Reference(wsR, min_col=Y0, max_col=Y0 + len(TIPI) - 1, min_row=1, max_row=ND + 1), titles_from_data=True)
 ch1.set_categories(Reference(wsR, min_col=LBL, min_row=2, max_row=ND + 1))
-for sr, colr in zip(ch1.series, ["F4B6A6", "D43A31", "8B1E1E"]):
+for sr, colr in zip(ch1.series, ["F5A623", "C9C2B8", "D43A31", "6B0F0B"]):
     sr.graphicalProperties.solidFill = colr
 ch1.y_axis.numFmt = "0"; ch1.height = 7.5; ch1.width = 16
 ch1.y_axis.delete = False; ch1.x_axis.delete = False

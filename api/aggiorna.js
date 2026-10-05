@@ -8,11 +8,12 @@ const REPO = process.env.GH_REPO || "boostcreativeai-prog/HorrorDays";
 const WORKFLOW = "aggiorna-report.yml";
 const IN_CORSO = ["queued", "in_progress", "waiting", "pending", "requested"];
 
-function json(body, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" },
-  });
+function json(body, status = 200, cdnSeconds = 0) {
+  const headers = { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" };
+  // lo stato è uguale per tutti: la CDN di Vercel lo tiene per pochi secondi, così tante pagine aperte
+  // che controllano ogni 20 secondi non consumano il limite di chiamate all'API di GitHub
+  if (cdnSeconds) headers["Vercel-CDN-Cache-Control"] = `max-age=${cdnSeconds}`;
+  return new Response(JSON.stringify(body), { status, headers });
 }
 
 async function github(path, init = {}) {
@@ -44,7 +45,7 @@ async function ultimo() {
 export async function GET() {
   if (!process.env.GH_DISPATCH_TOKEN) return json({ errore: "Aggiornamento manuale non configurato." }, 503);
   try {
-    return json(await ultimo());
+    return json(await ultimo(), 200, 10);
   } catch (e) {
     return json({ errore: e.message }, 502);
   }

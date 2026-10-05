@@ -19,7 +19,7 @@ I numeri sono quelli fiscali del C1: biglietti emessi e incasso lordo **al netto
 quindi solo acquisti andati a buon fine.
 
 **Auto e persone.** Ogni biglietto è un'auto, e la capienza del C1 (200 per turno) è in auto. Le persone
-dipendono dal prezzo: 24 € = 2 persone, 36 € = 3, 48 € = 4 (sempre 12 € a persona). Il report mostra auto e
+dipendono dal prezzo: 24 € = 2 persone, 36 € = 3, 48 € = 4, 60 € = 5 (sempre 12 € a persona). Il report mostra auto e
 persone per turno, serata e tipologia. Un prezzo diverso (es. un omaggio a 0 €) finisce tra le anomalie:
 indica quante persone vale nella colonna "Persone per auto" del foglio Tariffe dell'Excel in `data/`.
 La capienza è di **100 auto per turno** (`CAPIENZA_AUTO` in `scripts/build_report.py`), non i 200 del C1.
