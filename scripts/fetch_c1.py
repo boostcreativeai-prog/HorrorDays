@@ -51,11 +51,12 @@ def login(page):
         page.locator('input[name="employee[password]"]').first.press("Enter")
     page.wait_for_load_state("networkidle")
 
-    if page.locator('input[name*="otp" i], input[name*="code" i], input[autocomplete="one-time-code"]').count():
-        sys.exit("18Tickets chiede un codice di verifica (2FA): il login automatico non è possibile.")
+        otp = page.locator('input[name*="otp" i]:visible, input[autocomplete="one-time-code"]:visible').count()
     page.goto(f"{BASE}/siae_reports/index", wait_until="domcontentloaded")
     if "sign_in" in page.url or page.locator('input[name="employee[password]"]').count() \
             or "richiesta autorizzazione" in page.content():
+        if otp:
+            sys.exit("18Tickets chiede un codice di verifica (2FA): il login automatico non è possibile.")
         sys.exit("Login non riuscito: controlla T18_USER e T18_PASSWORD.")
     print("Login effettuato")
 
