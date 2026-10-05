@@ -127,7 +127,7 @@ def wait_report_link(page, rete, mm, yyyy, before, skip):
         url = rete.find(mm, yyyy, skip)
         if url:
             return url
-        if not attenzione and page.get_by_text("richiedendo più tempo del previsto").count():
+        if not attenzione and page.locator(':text("richiedendo più tempo del previsto"):visible').count():
             attenzione = True
             print(f"{mm}/{yyyy}: 18Tickets dice che il report richiede più tempo del previsto, continuo ad attendere...", flush=True)
             rete.note(f"{mm}/{yyyy}: popup Attenzione")
