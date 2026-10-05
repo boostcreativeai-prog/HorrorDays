@@ -1,14 +1,14 @@
 {
- "aggiornato": "2026-10-05T15:55",
+ "aggiornato": "2026-10-05T17:43",
  "fonte": [
   "Riepilogo_mensile_C1_10_2026.pdf",
   "Riepilogo_mensile_C1_11_2026.pdf"
  ],
  "totali": {
-  "incasso": 120.0,
-  "biglietti": 4,
+  "incasso": 312.0,
+  "biglietti": 10,
   "spettacoli": 35,
-  "spettacoli_venduti": 4,
+  "spettacoli_venduti": 8,
   "capienza": 7000
  },
  "spettacoli": [
@@ -38,8 +38,8 @@
    "ora": "22:15",
    "slot": "22:15",
    "capienza": 200,
-   "biglietti": 0,
-   "incasso": 0,
+   "biglietti": 1,
+   "incasso": 24.0,
    "annullati": 0
   },
   {
@@ -48,8 +48,8 @@
    "ora": "23:15",
    "slot": "23:15",
    "capienza": 200,
-   "biglietti": 1,
-   "incasso": 24.0,
+   "biglietti": 2,
+   "incasso": 48.0,
    "annullati": 0
   },
   {
@@ -128,8 +128,8 @@
    "ora": "21:15",
    "slot": "21:15",
    "capienza": 200,
-   "biglietti": 0,
-   "incasso": 0,
+   "biglietti": 1,
+   "incasso": 24.0,
    "annullati": 0
   },
   {
@@ -188,8 +188,8 @@
    "ora": "22:15",
    "slot": "22:15",
    "capienza": 200,
-   "biglietti": 0,
-   "incasso": 0,
+   "biglietti": 1,
+   "incasso": 48.0,
    "annullati": 0
   },
   {
@@ -208,8 +208,8 @@
    "ora": "23:59",
    "slot": "23:59",
    "capienza": 200,
-   "biglietti": 0,
-   "incasso": 0,
+   "biglietti": 1,
+   "incasso": 24.0,
    "annullati": 0
   },
   {
@@ -248,8 +248,8 @@
    "ora": "23:15",
    "slot": "23:15",
    "capienza": 200,
-   "biglietti": 1,
-   "incasso": 48.0,
+   "biglietti": 2,
+   "incasso": 96.0,
    "annullati": 0
   },
   {
@@ -367,28 +367,33 @@
   {
    "codice": "I1",
    "descrizione": "Tariffa 48 €",
-   "biglietti": 1,
-   "incasso": 48.0
+   "biglietti": 3,
+   "incasso": 144.0
   },
   {
    "codice": "I8",
    "descrizione": "Tariffa 24 €",
-   "biglietti": 3,
-   "incasso": 72.0
+   "biglietti": 7,
+   "incasso": 168.0
   }
  ],
  "storico": [
   {
    "t": "2026-10-05T15:55",
    "biglietti": 4,
-   "incasso": 120.0
+   "incasso": 120
+  },
+  {
+   "t": "2026-10-05T17:43",
+   "biglietti": 10,
+   "incasso": 312.0
   }
  ],
  "controlli": [
   {
    "controllo": "Incasso Vendite = somma TOTALE GENERALE",
    "ok": true,
-   "dettaglio": "120.00 vs 120.00"
+   "dettaglio": "312.00 vs 312.00"
   },
   {
    "controllo": "Spettacoli = pagine dei PDF",
@@ -403,6 +408,6 @@
  ],
  "anomalie": [
   "Orari non standard nei C1: 23:58",
-  "Capienza ricavata dalle altre pagine per 31 spettacoli senza vendite (200)"
+  "Capienza ricavata dalle altre pagine per 27 spettacoli senza vendite (200)"
  ]
 }
