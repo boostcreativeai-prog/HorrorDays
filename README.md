@@ -16,7 +16,12 @@ GitHub avvia i giri orari con 15-20 minuti di ritardo. Per avere i dati del mome
 senza bisogno di ricaricarla.
 
 I numeri sono quelli fiscali del C1: biglietti emessi e incasso lordo **al netto degli annullati**,
-quindi solo acquisti andati a buon fine. Gli omaggi, se ci sono, compaiono come tariffa a 0 €.
+quindi solo acquisti andati a buon fine.
+
+**Auto e persone.** Ogni biglietto è un'auto, e la capienza del C1 (200 per turno) è in auto. Le persone
+dipendono dal prezzo: 24 € = 2 persone, 36 € = 3, 48 € = 4 (sempre 12 € a persona). Il report mostra auto e
+persone per turno, serata e tipologia. Un prezzo diverso (es. un omaggio a 0 €) finisce tra le anomalie:
+indica quante persone vale nella colonna "Persone per auto" del foglio Tariffe dell'Excel in `data/`.
 
 Se il download fallisce il workflow si ferma, il sito resta all'ultimo aggiornamento valido
 e GitHub ti manda un'email. Nella pagina dell'esecuzione trovi lo screenshot dell'errore.

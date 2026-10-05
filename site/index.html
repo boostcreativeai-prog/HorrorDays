@@ -45,7 +45,7 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;gap:1
 h1{font-family:var(--f-hand);font-weight:400;color:var(--red);font-size:clamp(52px,11vw,124px);line-height:.9;letter-spacing:.01em}
 .sub{margin-top:16px;color:var(--muted);max-width:640px}
 
-.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin:28px 0 8px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin:28px 0 8px}
 .kpi{background:var(--black-2);padding:22px 22px 18px}
 .kpi .l{font:400 12px/1.2 var(--f-display);letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
 .kpi .v{font:400 56px/1 var(--f-lcd);color:var(--amber);margin-top:10px;text-shadow:0 0 18px #f5a62340;font-variant-numeric:tabular-nums}
@@ -86,6 +86,18 @@ tr.zero td{color:#a39d9599}
 .filters button[aria-pressed=true]{background:var(--red);border-color:var(--red)}
 .tscroll{overflow-x:auto}
 
+.tipi{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:20px}
+.tipo{background:var(--black-2);border:1px solid var(--line-soft);border-top:3px solid var(--c);padding:20px}
+.tipo .l{font:400 15px/1 var(--f-display);letter-spacing:.12em;text-transform:uppercase}
+.tipo .l small{display:block;font:400 13px/1.4 var(--f-body);letter-spacing:0;text-transform:none;color:var(--muted);margin-top:6px}
+.tipo .nums{display:flex;gap:24px;margin:16px 0 12px}
+.tipo .nums div{font:400 13px/1.2 var(--f-body);color:var(--muted)}
+.tipo .nums b{display:block;font:400 44px/1 var(--f-lcd);color:var(--white);font-weight:400}
+.tipo .bar i{background:var(--c)}
+.tipo .foot{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-top:8px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:baseline}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-bottom:12px}
+.cell small{font:400 11px/1 var(--f-body);color:#ede8e0b3;margin-left:3px}
 .checks{display:grid;grid-template-columns:1fr 1fr;gap:20px}
 .check{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--line-soft);font-size:14px}
 .check .s{font:400 20px/1 var(--f-lcd);width:34px;flex:none}
@@ -111,7 +123,7 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding:28px 0 40px;colo
 .next .btn[disabled]{opacity:.5;cursor:wait}
 
 @media (max-width:860px){
-  .kpis{grid-template-columns:1fr 1fr}.grid2,.checks{grid-template-columns:1fr}
+  .kpis{grid-template-columns:1fr 1fr}.grid2,.checks,.tipi{grid-template-columns:1fr}
   .kpi .v{font-size:44px}.tag{display:none}
   .heat{grid-template-columns:62px repeat(5,1fr) 44px;gap:3px}.cell{height:42px;font-size:20px}
   .heat .day{font-size:13px}.cell.tot{font-size:18px}
@@ -132,7 +144,7 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding:28px 0 40px;colo
 <main class="wrap">
   <div class="hero">
     <div class="kicker">Horror Drive-In · Non fermatevi · Pozzuoli</div>
-    <h1>Biglietti<br>venduti</h1>
+    <h1>Auto e<br>persone</h1>
     <p class="sub">Dati dai Riepiloghi mensili C1 SIAE della cassa 18Tickets, aggiornati ogni ora o quando premi <b>Aggiorna ora</b>. Il C1 è cumulativo: ogni aggiornamento sostituisce il precedente.</p>
     <div class="next" aria-live="polite">
       <div><div class="l">Prossimo aggiornamento tra</div><div class="t" id="cd">--:--</div></div>
@@ -145,36 +157,46 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding:28px 0 40px;colo
   </div>
 
   <section>
+    <h2>Tipologie <em>di ticket</em></h2>
+    <p class="h-sub">Ogni biglietto è un'auto: 24 € = 2 persone, 36 € = 3 persone, 48 € = 4 persone</p>
+    <div class="tipi" id="tipi"></div>
+    <div class="panel"><h3>Auto per serata e tipologia</h3><div class="legend" id="legTipi"></div><div class="chart"><canvas id="cTipiSerate"></canvas></div></div>
+  </section>
+
+  <section>
+    <h2>Serate e <em>turni</em></h2>
+    <p class="h-sub" id="heatSub">Auto per turno su una capienza di 200: più il rosso è acceso, più il turno è pieno</p>
+    <div class="filters" id="heatMode">
+      <button aria-pressed="true" data-m="auto">Auto</button><button aria-pressed="false" data-m="persone">Persone</button>
+    </div>
+    <div class="panel"><div class="heat" id="heat"></div></div>
+  </section>
+
+  <section>
     <h2>Andamento <em>vendite</em></h2>
-    <p class="h-sub">Incasso cumulato a ogni aggiornamento</p>
+    <p class="h-sub">Auto, persone e incasso cumulati a ogni aggiornamento</p>
     <div class="grid2">
-      <div class="panel"><h3>Incasso nel tempo</h3><div class="chart"><canvas id="cTrend"></canvas></div></div>
+      <div class="panel"><h3>Auto e persone nel tempo</h3><div class="chart"><canvas id="cTrend"></canvas></div></div>
       <div class="panel"><h3>Ultimi aggiornamenti</h3><div class="tscroll"><table id="tStorico"></table></div></div>
     </div>
   </section>
 
   <section>
-    <h2>Serate e <em>turni</em></h2>
-    <p class="h-sub">Biglietti per turno: più il rosso è acceso, più il turno vende</p>
-    <div class="panel"><div class="heat" id="heat"></div></div>
-  </section>
-
-  <section>
     <div class="grid2">
+      <div class="panel"><h3>Persone per serata</h3><div class="chart"><canvas id="cPersone"></canvas></div></div>
       <div class="panel"><h3>Incasso per serata</h3><div class="chart"><canvas id="cSerate"></canvas></div></div>
-      <div class="panel"><h3>Per tariffa</h3><div class="chart" style="height:180px"><canvas id="cTariffe"></canvas></div><table id="tTariffe" style="margin-top:14px"></table></div>
     </div>
   </section>
 
   <section>
     <h2>Top 5 <em>spettacoli</em></h2>
-    <p class="h-sub">Per biglietti venduti</p>
+    <p class="h-sub">Per auto vendute</p>
     <div class="panel tscroll"><table id="tTop"></table></div>
   </section>
 
   <section>
     <h2>Tutti gli <em>spettacoli</em></h2>
-    <p class="h-sub">Capienza e occupazione secondo il C1 SIAE</p>
+    <p class="h-sub">Auto per tipologia, persone e occupazione (auto su capienza) secondo il C1 SIAE</p>
     <div class="filters" id="filters"></div>
     <div class="panel tscroll"><table id="tShows"></table></div>
   </section>
@@ -214,53 +236,66 @@ Chart.defaults.plugins.legend.display=false;Chart.defaults.maintainAspectRatio=f
 
 function draw(id,cfg){charts[id]?.destroy();charts[id]=new Chart(document.getElementById(id),cfg)}
 
+// 1 biglietto = 1 auto; le persone dipendono dalla tipologia (24 € = 2, 36 € = 3, 48 € = 4)
+const TIPO_COL={2:C.amber,3:"#c9c2b8",4:C.red};
+const TIPO_FB=[{persone:2,prezzo:24},{persone:3,prezzo:36},{persone:4,prezzo:48}];
+let heatMode="auto";
+// compatibilità con i dati generati prima di auto/persone
+const auto=s=>s.auto??s.biglietti??0;
+const pers=s=>s.persone??0;
+
 function render(D){
   DATA=D;const T=D.totali,S=D.storico,last=S[S.length-1],prev=S[S.length-2];
+  const TIPI=D.tipologie||TIPO_FB.map(t=>({...t,etichetta:"Auto da "+t.persone,auto:0,persone_tot:0,incasso:0}));
   document.getElementById("src").textContent="Fonte: "+D.fonte.join(", ");
-  const delta=(a,b,f)=>prev?`<span class="${a-b>0?"up":""}">${a-b>0?"+":""}${f(a-b)}</span> dall'ultimo aggiornamento`:"Prima estrazione";
+  const delta=(a,b,f)=>prev&&a!=null&&b!=null?`<span class="${a-b>0?"up":""}">${a-b>0?"+":""}${f(a-b)}</span> dall'ultimo aggiornamento`:"Prima estrazione";
+  const A=auto(T),P=pers(T);
   const k=[
     ["Incasso lordo",eur(T.incasso),delta(last.incasso,prev?.incasso,eur)],
-    ["Biglietti venduti",int(T.biglietti),delta(last.biglietti,prev?.biglietti,int)],
+    ["Auto vendute",int(A),delta(auto(last),prev&&auto(prev),int)],
+    ["Persone",int(P),delta(last.persone,prev?.persone,int)],
+    ["Occupazione media",pct(T.capienza?A/T.capienza:0),`<b>${int(A)}</b> auto su <b>${int(T.capienza)}</b> posti auto`],
+    ["Persone per auto",(A?P/A:0).toLocaleString("it-IT",{maximumFractionDigits:2}),"Media su tutte le auto vendute"],
     ["Spettacoli con vendite",`${T.spettacoli_venduti}<small> / ${T.spettacoli}</small>`,`<b>${pct(T.spettacoli_venduti/T.spettacoli)}</b> dei turni`],
-    ["Prezzo medio",eur(T.biglietti?T.incasso/T.biglietti:0),"Incasso diviso biglietti"],
-    ["Occupazione media",pct(T.capienza?T.biglietti/T.capienza:0),`su <b>${int(T.capienza)}</b> posti totali`],
+    ["Prezzo medio per auto",eur(A?T.incasso/A:0),"Incasso diviso auto"],
     ["Ultimo aggiornamento",dt(D.aggiornato).replace(",",""),`<b>${S.length}</b> estrazioni nello storico`]];
   document.getElementById("kpis").innerHTML=k.map(([l,v,x])=>`<div class="kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="d">${x}</div></div>`).join("");
 
-  // andamento
-  draw("cTrend",{type:"line",data:{labels:S.map(r=>dt(r.t)),datasets:[{data:S.map(r=>r.incasso),borderColor:C.red,backgroundColor:"#d43a3122",fill:true,tension:.3,pointRadius:S.length>40?0:3,pointBackgroundColor:C.red}]},
-    options:{scales:{y:{beginAtZero:true,ticks:{callback:v=>eur(v).replace(",00","")}},x:{ticks:{maxTicksLimit:6}}},plugins:{tooltip:{callbacks:{label:c=>eur(c.raw)}}}}});
-  const rows=S.slice(-8).reverse().map((r,i,a)=>{const p=S[S.length-2-i];const db=p?r.biglietti-p.biglietti:null;
-    return `<tr><td>${dt(r.t)}</td><td class="n">${int(r.biglietti)}</td><td class="n">${eur(r.incasso)}</td><td class="n ${db>0?"up":""}">${db===null?"n.d.":(db>0?"+":"")+db}</td></tr>`}).join("");
-  document.getElementById("tStorico").innerHTML=`<tr><th>Data</th><th class="n">Biglietti</th><th class="n">Incasso</th><th class="n">Δ</th></tr>${rows}`;
-
-  // heatmap
+  // tipologie
+  const totA=TIPI.reduce((a,t)=>a+t.auto,0)||1;
+  document.getElementById("tipi").innerHTML=TIPI.map(t=>`<div class="tipo" style="--c:${TIPO_COL[t.persone]||C.muted}">
+    <div class="l">Auto da ${t.persone} persone<small>Ticket da ${eur(t.prezzo).replace(",00","")} · ${t.persone} persone per auto</small></div>
+    <div class="nums"><div><b>${int(t.auto)}</b>auto</div><div><b>${int(t.persone_tot)}</b>persone</div></div>
+    <div class="bar"><i style="width:${(t.auto/totA*100).toFixed(1)}%"></i></div>
+    <div class="foot"><span>${pct(t.auto/totA)} delle auto</span><span>${eur(t.incasso)}</span></div></div>`).join("");
+  document.getElementById("legTipi").innerHTML=TIPI.map(t=>`<span><i class="dot" style="background:${TIPO_COL[t.persone]}"></i>Auto da ${t.persone} (${eur(t.prezzo).replace(",00","")})</span>`).join("");
   const dates=[...new Set(D.spettacoli.map(s=>s.data))];
-  const max=Math.max(1,...D.spettacoli.map(s=>s.biglietti));
-  let h=`<div></div>${SLOTS.map(s=>`<div class="hd">${s}</div>`).join("")}<div class="hd" style="text-align:right">TOT</div>`;
-  for(const dd of dates){const day=D.spettacoli.filter(s=>s.data===dd);const wd=d(dd).getDay();
-    h+=`<div class="day">${ddmm(dd)}<span>${GG[wd]}</span></div>`;
-    for(const sl of SLOTS){const s=day.find(x=>x.slot===sl);const n=s?s.biglietti:null;
-      const a=n?0.25+0.75*n/max:0;
-      h+=n===null?`<div class="cell" title="Nessuno spettacolo">·</div>`:`<div class="cell ${n?"on":""}" style="${n?`background:rgba(212,58,49,${a.toFixed(2)})`:""}" title="${ddmm(dd)} ${s.ora} · ${n} biglietti · ${eur(s.incasso)}">${n}</div>`}
-    h+=`<div class="cell tot">${day.reduce((a,s)=>a+s.biglietti,0)}</div>`}
-  document.getElementById("heat").innerHTML=h;
+  const lab=dates.map(x=>`${GG[d(x).getDay()]} ${ddmm(x)}`);
+  const byDate=(x,f)=>D.spettacoli.filter(s=>s.data===x).reduce((a,s)=>a+f(s),0);
+  draw("cTipiSerate",{type:"bar",data:{labels:lab,datasets:TIPI.map(t=>({label:`Auto da ${t.persone}`,data:dates.map(x=>byDate(x,s=>s.tipi?.[t.persone]||0)),backgroundColor:TIPO_COL[t.persone],borderRadius:2}))},
+    options:{scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,beginAtZero:true,ticks:{precision:0}}},
+      plugins:{tooltip:{mode:"index",callbacks:{label:c=>`${c.dataset.label}: ${c.raw} auto (${c.raw*TIPI[c.datasetIndex].persone} persone)`,footer:it=>`Totale: ${it.reduce((a,c)=>a+c.raw,0)} auto`}}}}});
+
+  // andamento
+  draw("cTrend",{type:"line",data:{labels:S.map(r=>dt(r.t)),datasets:[
+      {label:"Persone",data:S.map(r=>r.persone),borderColor:C.red,backgroundColor:"#d43a3122",fill:true,tension:.3,pointRadius:S.length>40?0:3,pointBackgroundColor:C.red},
+      {label:"Auto",data:S.map(auto),borderColor:C.amber,backgroundColor:"transparent",tension:.3,pointRadius:S.length>40?0:3,pointBackgroundColor:C.amber}]},
+    options:{plugins:{legend:{display:true,labels:{boxWidth:10}},tooltip:{mode:"index",intersect:false,callbacks:{footer:it=>"Incasso: "+eur(S[it[0].dataIndex].incasso)}}},scales:{y:{beginAtZero:true,ticks:{precision:0}},x:{ticks:{maxTicksLimit:6}}}}});
+  const rows=S.slice(-8).reverse().map((r,i)=>{const p=S[S.length-2-i];const da=p?auto(r)-auto(p):null;
+    return `<tr><td>${dt(r.t)}</td><td class="n">${int(auto(r))}</td><td class="n">${r.persone==null?"n.d.":int(r.persone)}</td><td class="n">${eur(r.incasso)}</td><td class="n ${da>0?"up":""}">${da===null?"n.d.":(da>0?"+":"")+da}</td></tr>`}).join("");
+  document.getElementById("tStorico").innerHTML=`<tr><th>Data</th><th class="n">Auto</th><th class="n">Persone</th><th class="n">Incasso</th><th class="n">Δ auto</th></tr>${rows}`;
+
+  heat();
 
   // serate
-  draw("cSerate",{type:"bar",data:{labels:dates.map(x=>`${GG[d(x).getDay()]} ${ddmm(x)}`),datasets:[{data:dates.map(x=>D.spettacoli.filter(s=>s.data===x).reduce((a,s)=>a+s.incasso,0)),backgroundColor:C.red,hoverBackgroundColor:C.deep,borderRadius:2}]},
-    options:{scales:{y:{beginAtZero:true,ticks:{callback:v=>eur(v).replace(",00","")}},x:{grid:{display:false}}},plugins:{tooltip:{callbacks:{label:c=>eur(c.raw)}}}}});
-
-  // tariffe
-  const tot=D.tariffe.reduce((a,t)=>a+t.incasso,0)||1;
-  draw("cTariffe",{type:"bar",data:{labels:D.tariffe.map(t=>t.codice),datasets:[{data:D.tariffe.map(t=>t.incasso),backgroundColor:[C.red,C.amber,C.deep,C.muted],borderRadius:2}]},
-    options:{indexAxis:"y",layout:{padding:{left:4}},scales:{x:{beginAtZero:true,ticks:{callback:v=>eur(v).replace(",00","")}},y:{grid:{display:false}}},plugins:{tooltip:{callbacks:{title:c=>D.tariffe[c[0].dataIndex].descrizione,label:c=>eur(c.raw)}}}}});
-  document.getElementById("tTariffe").innerHTML=`<tr><th>Codice</th><th class="n">Biglietti</th><th class="n">Incasso</th><th class="n">%</th></tr>`+
-    D.tariffe.map(t=>`<tr><td>${t.codice} · ${t.descrizione}</td><td class="n">${int(t.biglietti)}</td><td class="n">${eur(t.incasso)}</td><td class="n">${pct(t.incasso/tot)}</td></tr>`).join("");
+  const barOpts=(axis,tip)=>({scales:{y:{beginAtZero:true,ticks:{precision:0,callback:axis}},x:{grid:{display:false}}},plugins:{tooltip:{callbacks:{label:c=>tip(c.raw)}}}});
+  draw("cPersone",{type:"bar",data:{labels:lab,datasets:[{data:dates.map(x=>byDate(x,pers)),backgroundColor:C.red,hoverBackgroundColor:C.deep,borderRadius:2}]},options:barOpts(v=>int(v),v=>int(v)+" persone")});
+  draw("cSerate",{type:"bar",data:{labels:lab,datasets:[{data:dates.map(x=>byDate(x,s=>s.incasso)),backgroundColor:C.deep,hoverBackgroundColor:C.red,borderRadius:2}]},options:barOpts(v=>eur(v).replace(",00",""),eur)});
 
   // top 5
-  const top=[...D.spettacoli].filter(s=>s.biglietti).sort((a,b)=>b.biglietti-a.biglietti||b.incasso-a.incasso).slice(0,5);
-  document.getElementById("tTop").innerHTML=`<tr><th>#</th><th>Serata</th><th>Turno</th><th class="n">Biglietti</th><th class="n">Incasso</th></tr>`+
-    (top.length?top.map((s,i)=>`<tr><td style="font:400 22px/1 var(--f-lcd);color:var(--amber)">${i+1}</td><td>${GGL[d(s.data).getDay()]} ${ddmm(s.data)}</td><td>${s.ora}</td><td class="n">${int(s.biglietti)}</td><td class="n">${eur(s.incasso)}</td></tr>`).join(""):`<tr><td colspan="5">Ancora nessuna vendita</td></tr>`);
+  const top=[...D.spettacoli].filter(auto).sort((a,b)=>auto(b)-auto(a)||pers(b)-pers(a)||b.incasso-a.incasso).slice(0,5);
+  document.getElementById("tTop").innerHTML=`<tr><th>#</th><th>Serata</th><th>Turno</th><th class="n">Auto</th><th class="n">Persone</th><th class="n">Incasso</th></tr>`+
+    (top.length?top.map((s,i)=>`<tr><td style="font:400 22px/1 var(--f-lcd);color:var(--amber)">${i+1}</td><td>${GGL[d(s.data).getDay()]} ${ddmm(s.data)}</td><td>${s.ora}</td><td class="n">${int(auto(s))}</td><td class="n">${int(pers(s))}</td><td class="n">${eur(s.incasso)}</td></tr>`).join(""):`<tr><td colspan="6">Ancora nessuna vendita</td></tr>`);
 
   // filtri e tabella
   document.getElementById("filters").innerHTML=["tutte",...dates].map(x=>`<button aria-pressed="${filter===x}" data-f="${x}">${x==="tutte"?"Tutte":GG[d(x).getDay()]+" "+ddmm(x)}</button>`).join("");
@@ -271,12 +306,33 @@ function render(D){
   document.getElementById("anom").innerHTML=D.anomalie.length?D.anomalie.map(a=>`<div class="check"><span class="s warn">!!</span><div>${a}</div></div>`).join(""):`<div class="check"><span class="s ok">OK</span><div>Nessuna anomalia</div></div>`;
 }
 
+function heat(){
+  const D=DATA,val=heatMode==="auto"?auto:pers;
+  const dates=[...new Set(D.spettacoli.map(s=>s.data))];
+  const max=Math.max(1,...D.spettacoli.map(val));
+  let h=`<div></div>${SLOTS.map(s=>`<div class="hd">${s}</div>`).join("")}<div class="hd" style="text-align:right">TOT</div>`;
+  for(const dd of dates){const day=D.spettacoli.filter(s=>s.data===dd);const wd=d(dd).getDay();
+    h+=`<div class="day">${ddmm(dd)}<span>${GG[wd]}</span></div>`;
+    for(const sl of SLOTS){const s=day.find(x=>x.slot===sl);const n=s?val(s):null;
+      const a=n?0.25+0.75*n/max:0;
+      const tip=s?`${ddmm(dd)} ${s.ora} · ${auto(s)} auto su ${s.capienza} · ${pers(s)} persone`+(s.tipi?` (da 2: ${s.tipi[2]||0}, da 3: ${s.tipi[3]||0}, da 4: ${s.tipi[4]||0})`:"")+` · ${eur(s.incasso)}`:"";
+      h+=n===null?`<div class="cell" title="Nessuno spettacolo">·</div>`:`<div class="cell ${n?"on":""}" style="${n?`background:rgba(212,58,49,${a.toFixed(2)})`:""}" title="${tip}">${n}</div>`}
+    h+=`<div class="cell tot">${day.reduce((a,s)=>a+val(s),0)}</div>`}
+  document.getElementById("heat").innerHTML=h;
+  document.getElementById("heatSub").textContent=heatMode==="auto"
+    ?"Auto per turno su una capienza di 200: più il rosso è acceso, più il turno è pieno"
+    :"Persone per turno (auto × persone per tipologia)";
+}
+document.getElementById("heatMode").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;heatMode=b.dataset.m;
+  document.querySelectorAll("#heatMode button").forEach(x=>x.setAttribute("aria-pressed",x.dataset.m===heatMode));if(DATA)heat()});
+
 function showsTable(){
   const rows=DATA.spettacoli.filter(s=>filter==="tutte"||s.data===filter);
-  document.getElementById("tShows").innerHTML=`<tr><th>Serata</th><th>Turno</th><th class="n">Biglietti</th><th class="n">Incasso</th><th>Occupazione</th><th>Stato</th></tr>`+
-    rows.map(s=>{const o=s.capienza?s.biglietti/s.capienza:0;return `<tr class="${s.biglietti?"":"zero"}"><td>${GG[d(s.data).getDay()]} ${ddmm(s.data)}</td><td>${s.ora}</td><td class="n">${int(s.biglietti)}</td><td class="n">${eur(s.incasso)}</td>
-      <td><div style="display:flex;align-items:center;gap:10px"><div class="bar" style="flex:1"><i style="width:${Math.min(100,o*100)}%"></i></div><span style="min-width:48px;text-align:right">${pct(o)}</span></div></td>
-      <td><span class="pill ${s.biglietti?"on":""}">${s.biglietti?"Venduto":"Zero vendite"}</span></td></tr>`}).join("");
+  const tp=(s,p)=>s.tipi?int(s.tipi[p]||0):"–";
+  document.getElementById("tShows").innerHTML=`<tr><th>Serata</th><th>Turno</th><th class="n">Auto</th><th class="n">Da 2</th><th class="n">Da 3</th><th class="n">Da 4</th><th class="n">Persone</th><th class="n">Incasso</th><th>Occupazione auto</th><th>Stato</th></tr>`+
+    rows.map(s=>{const n=auto(s),o=s.capienza?n/s.capienza:0;return `<tr class="${n?"":"zero"}"><td>${GG[d(s.data).getDay()]} ${ddmm(s.data)}</td><td>${s.ora}</td><td class="n">${int(n)}</td><td class="n">${tp(s,2)}</td><td class="n">${tp(s,3)}</td><td class="n">${tp(s,4)}</td><td class="n">${int(pers(s))}</td><td class="n">${eur(s.incasso)}</td>
+      <td><div style="display:flex;align-items:center;gap:10px"><div class="bar" style="flex:1"><i style="width:${Math.min(100,o*100)}%"></i></div><span style="min-width:64px;text-align:right">${n}/${s.capienza}</span></div></td>
+      <td><span class="pill ${n?"on":""}">${n?"Venduto":"Zero vendite"}</span></td></tr>`}).join("");
 }
 document.getElementById("filters").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;filter=b.dataset.f;
   document.querySelectorAll("#filters button").forEach(x=>x.setAttribute("aria-pressed",x.dataset.f===filter));showsTable()});
