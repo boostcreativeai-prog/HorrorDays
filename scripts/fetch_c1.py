@@ -51,7 +51,7 @@ def login(page):
         page.locator('input[name="employee[password]"]').first.press("Enter")
     page.wait_for_load_state("networkidle")
 
-        otp = page.locator('input[name*="otp" i]:visible, input[autocomplete="one-time-code"]:visible').count()
+    otp = page.locator('input[name*="otp" i]:visible, input[autocomplete="one-time-code"]:visible').count()
     page.goto(f"{BASE}/siae_reports/index", wait_until="domcontentloaded")
     if "sign_in" in page.url or page.locator('input[name="employee[password]"]').count() \
             or "richiesta autorizzazione" in page.content():
