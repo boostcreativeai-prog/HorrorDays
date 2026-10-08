@@ -343,7 +343,7 @@ function heat(){
     h+=`<div class="cell tot">${day.reduce((a,s)=>a+val(s),0)}</div>`}
   document.getElementById("heat").innerHTML=h;
   document.getElementById("heatSub").textContent=heatMode==="auto"
-    ?`Auto per turno su una capienza di ${D.capienza_turno||100}: più il rosso è acceso, più il turno è pieno`
+    ?`Auto per turno su una capienza di ${D.capienza_turno||80}: più il rosso è acceso, più il turno è pieno`
     :"Persone per turno (auto × persone per tipologia)";
 }
 document.getElementById("heatMode").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;heatMode=b.dataset.m;

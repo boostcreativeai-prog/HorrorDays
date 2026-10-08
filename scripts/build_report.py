@@ -26,9 +26,9 @@ SNAP = dt.datetime.now(ZoneInfo("Europe/Rome")).replace(tzinfo=None, second=0, m
 # nel foglio Tariffe (colonna "Persone per auto"), altrimenti finiscono tra le anomalie.
 PERSONE_PER_PREZZO = {24.0: 2, 36.0: 3, 48.0: 4, 60.0: 5}
 EURO_A_PERSONA = 12.0
-# Capienza reale del drive-in: 100 auto per turno (il C1 riporta 200, che non è il limite effettivo).
+# Capienza reale del drive-in: 80 auto per turno (il C1 riporta 200, che non è il limite effettivo).
 # Le persone non hanno un limite proprio: dipendono dalle auto.
-CAPIENZA_AUTO = 100
+CAPIENZA_AUTO = 80
 TIPI = sorted(set(PERSONE_PER_PREZZO.values()))  # 2, 3, 4, 5
 
 pdfs = sorted(glob.glob(os.path.join(args.c1, "*.pdf")) + glob.glob(os.path.join(args.c1, "*.PDF")))

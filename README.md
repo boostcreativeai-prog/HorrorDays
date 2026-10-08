@@ -22,7 +22,7 @@ quindi solo acquisti andati a buon fine.
 dipendono dal prezzo: 24 € = 2 persone, 36 € = 3, 48 € = 4, 60 € = 5 (sempre 12 € a persona). Il report mostra auto e
 persone per turno, serata e tipologia. Un prezzo diverso (es. un omaggio a 0 €) finisce tra le anomalie:
 indica quante persone vale nella colonna "Persone per auto" del foglio Tariffe dell'Excel in `data/`.
-La capienza è di **100 auto per turno** (`CAPIENZA_AUTO` in `scripts/build_report.py`), non i 200 del C1.
+La capienza è di **80 auto per turno** (2.800 posti auto su 35 turni) (`CAPIENZA_AUTO` in `scripts/build_report.py`), non i 200 del C1.
 
 **Quando si vende.** Il C1 non riporta l'ora di ogni acquisto. A ogni aggiornamento lo script confronta ogni turno
 con l'aggiornamento precedente e salva le differenze in `data/movimenti.json` (registro vendite): così si sa
