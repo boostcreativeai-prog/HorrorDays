@@ -1,5 +1,5 @@
 {
- "aggiornato": "2026-10-11T21:00",
+ "aggiornato": "2026-10-11T21:14",
  "fonte": [
   "Riepilogo_mensile_C1_10_2026.pdf",
   "Riepilogo_mensile_C1_11_2026.pdf"
@@ -2308,6 +2308,13 @@
   },
   {
    "t": "2026-10-11T21:00",
+   "auto": 169,
+   "biglietti": 169,
+   "persone": 494,
+   "incasso": 5928
+  },
+  {
+   "t": "2026-10-11T21:14",
    "auto": 169,
    "biglietti": 169,
    "persone": 494,
