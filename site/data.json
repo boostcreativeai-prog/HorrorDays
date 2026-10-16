@@ -1,19 +1,19 @@
 {
- "aggiornato": "2026-10-16T12:28",
+ "aggiornato": "2026-10-16T13:27",
  "fonte": [
   "Riepilogo_mensile_C1_10_2026.pdf",
   "Riepilogo_mensile_C1_11_2026.pdf"
  ],
  "totali": {
-  "incasso": 10776.0,
-  "auto": 302,
-  "biglietti": 302,
-  "persone": 898,
+  "incasso": 10932.0,
+  "auto": 307,
+  "biglietti": 307,
+  "persone": 911,
   "tipi": {
-   "2": 156,
+   "2": 160,
    "3": 25,
    "4": 94,
-   "5": 27
+   "5": 28
   },
   "spettacoli": 35,
   "spettacoli_venduti": 34,
@@ -24,9 +24,9 @@
    "persone": 2,
    "prezzo": 24.0,
    "etichetta": "Auto da 2",
-   "auto": 156,
-   "persone_tot": 312,
-   "incasso": 3744.0
+   "auto": 160,
+   "persone_tot": 320,
+   "incasso": 3840.0
   },
   {
    "persone": 3,
@@ -48,9 +48,9 @@
    "persone": 5,
    "prezzo": 60.0,
    "etichetta": "Auto da 5",
-   "auto": 27,
-   "persone_tot": 135,
-   "incasso": 1620.0
+   "auto": 28,
+   "persone_tot": 140,
+   "incasso": 1680.0
   }
  ],
  "spettacoli": [
@@ -114,16 +114,16 @@
    "ora": "23:15",
    "slot": "23:15",
    "capienza": 80,
-   "auto": 22,
-   "biglietti": 22,
-   "persone": 63,
+   "auto": 24,
+   "biglietti": 24,
+   "persone": 70,
    "tipi": {
-    "2": 11,
+    "2": 12,
     "3": 4,
     "4": 6,
-    "5": 1
+    "5": 2
    },
-   "incasso": 756.0,
+   "incasso": 840.0,
    "annullati": 1
   },
   {
@@ -546,16 +546,16 @@
    "ora": "22:15",
    "slot": "22:15",
    "capienza": 80,
-   "auto": 12,
-   "biglietti": 12,
-   "persone": 33,
+   "auto": 15,
+   "biglietti": 15,
+   "persone": 39,
    "tipi": {
-    "2": 7,
+    "2": 10,
     "3": 1,
     "4": 4,
     "5": 0
    },
-   "incasso": 396.0,
+   "incasso": 468.0,
    "annullati": 0
   },
   {
@@ -699,10 +699,10 @@
    "codice": "I8",
    "descrizione": "Auto da 2 · 24 €",
    "persone_per_auto": 2,
-   "auto": 156,
-   "biglietti": 156,
-   "persone": 312,
-   "incasso": 3744.0
+   "auto": 160,
+   "biglietti": 160,
+   "persone": 320,
+   "incasso": 3840.0
   },
   {
    "codice": "I2",
@@ -717,10 +717,10 @@
    "codice": "I5",
    "descrizione": "Auto da 5 · 60 €",
    "persone_per_auto": 5,
-   "auto": 27,
-   "biglietti": 27,
-   "persone": 135,
-   "incasso": 1620.0
+   "auto": 28,
+   "biglietti": 28,
+   "persone": 140,
+   "incasso": 1680.0
   }
  ],
  "storico": [
@@ -3277,7 +3277,14 @@
    "auto": 302,
    "biglietti": 302,
    "persone": 898,
-   "incasso": 10776.0
+   "incasso": 10776
+  },
+  {
+   "t": "2026-10-16T13:27",
+   "auto": 307,
+   "biglietti": 307,
+   "persone": 911,
+   "incasso": 10932.0
   }
  ],
  "capienza_turno": 80,
@@ -7780,9 +7787,41 @@
     "4": 0,
     "5": 0
    }
+  },
+  {
+   "da": "2026-10-16T12:28",
+   "a": "2026-10-16T13:27",
+   "id": "20261023_2315",
+   "data": "2026-10-23",
+   "ora": "23:15",
+   "auto": 2,
+   "persone": 7,
+   "incasso": 84.0,
+   "tipi": {
+    "2": 1,
+    "3": 0,
+    "4": 0,
+    "5": 1
+   }
+  },
+  {
+   "da": "2026-10-16T12:28",
+   "a": "2026-10-16T13:27",
+   "id": "20261031_2215",
+   "data": "2026-10-31",
+   "ora": "22:15",
+   "auto": 3,
+   "persone": 6,
+   "incasso": 72.0,
+   "tipi": {
+    "2": 3,
+    "3": 0,
+    "4": 0,
+    "5": 0
+   }
   }
  ],
- "movimenti_totali": 282,
+ "movimenti_totali": 284,
  "picchi": {
   "giorni": [
    {
@@ -7853,9 +7892,9 @@
    },
    {
     "giorno": "2026-10-16",
-    "auto": 10,
-    "persone": 37,
-    "incasso": 444.0
+    "auto": 15,
+    "persone": 50,
+    "incasso": 600.0
    }
   ],
   "ore": [
@@ -7933,9 +7972,9 @@
    },
    {
     "ora": 12,
-    "auto": 16,
-    "persone": 43,
-    "incasso": 516.0
+    "auto": 21,
+    "persone": 56,
+    "incasso": 672.0
    },
    {
     "ora": 13,
@@ -8031,9 +8070,9 @@
    },
    {
     "giorno": 4,
-    "auto": 33,
-    "persone": 109,
-    "incasso": 1308.0
+    "auto": 38,
+    "persone": 122,
+    "incasso": 1464.0
    },
    {
     "giorno": 5,
@@ -8053,7 +8092,7 @@
   {
    "controllo": "Incasso Vendite = somma TOTALE GENERALE",
    "ok": true,
-   "dettaglio": "10776.00 vs 10776.00"
+   "dettaglio": "10932.00 vs 10932.00"
   },
   {
    "controllo": "Spettacoli = pagine dei PDF",
