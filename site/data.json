@@ -1,19 +1,19 @@
 {
- "aggiornato": "2026-10-18T11:28",
+ "aggiornato": "2026-10-18T12:22",
  "fonte": [
   "Riepilogo_mensile_C1_10_2026.pdf",
   "Riepilogo_mensile_C1_11_2026.pdf"
  ],
  "totali": {
-  "incasso": 13848.0,
-  "auto": 383,
-  "biglietti": 383,
-  "persone": 1154,
+  "incasso": 13908.0,
+  "auto": 384,
+  "biglietti": 384,
+  "persone": 1159,
   "tipi": {
    "2": 192,
    "3": 33,
    "4": 119,
-   "5": 39
+   "5": 40
   },
   "spettacoli": 35,
   "spettacoli_venduti": 34,
@@ -48,9 +48,9 @@
    "persone": 5,
    "prezzo": 60.0,
    "etichetta": "Auto da 5",
-   "auto": 39,
-   "persone_tot": 195,
-   "incasso": 2340.0
+   "auto": 40,
+   "persone_tot": 200,
+   "incasso": 2400.0
   }
  ],
  "spettacoli": [
@@ -240,16 +240,16 @@
    "ora": "20:15",
    "slot": "20:15",
    "capienza": 80,
-   "auto": 7,
-   "biglietti": 7,
-   "persone": 24,
+   "auto": 8,
+   "biglietti": 8,
+   "persone": 29,
    "tipi": {
     "2": 2,
     "3": 1,
     "4": 3,
-    "5": 1
+    "5": 2
    },
-   "incasso": 288.0,
+   "incasso": 348.0,
    "annullati": 0
   },
   {
@@ -717,10 +717,10 @@
    "codice": "I5",
    "descrizione": "Auto da 5 · 60 €",
    "persone_per_auto": 5,
-   "auto": 39,
-   "biglietti": 39,
-   "persone": 195,
-   "incasso": 2340.0
+   "auto": 40,
+   "biglietti": 40,
+   "persone": 200,
+   "incasso": 2400.0
   }
  ],
  "storico": [
@@ -3739,27 +3739,18 @@
    "auto": 383,
    "biglietti": 383,
    "persone": 1154,
-   "incasso": 13848.0
+   "incasso": 13848
+  },
+  {
+   "t": "2026-10-18T12:22",
+   "auto": 384,
+   "biglietti": 384,
+   "persone": 1159,
+   "incasso": 13908.0
   }
  ],
  "capienza_turno": 80,
  "movimenti": [
-  {
-   "da": "2026-10-07T08:19",
-   "a": "2026-10-07T09:18",
-   "id": "20261031_2315",
-   "data": "2026-10-31",
-   "ora": "23:15",
-   "auto": 1,
-   "persone": 4,
-   "incasso": 48.0,
-   "tipi": {
-    "2": 0,
-    "3": 0,
-    "4": 1,
-    "5": 0
-   }
-  },
   {
    "da": "2026-10-07T12:16",
    "a": "2026-10-07T13:16",
@@ -8543,9 +8534,25 @@
     "4": 1,
     "5": 0
    }
+  },
+  {
+   "da": "2026-10-18T11:28",
+   "a": "2026-10-18T12:22",
+   "id": "20261025_2015",
+   "data": "2026-10-25",
+   "ora": "20:15",
+   "auto": 1,
+   "persone": 5,
+   "incasso": 60.0,
+   "tipi": {
+    "2": 0,
+    "3": 0,
+    "4": 0,
+    "5": 1
+   }
   }
  ],
- "movimenti_totali": 349,
+ "movimenti_totali": 350,
  "picchi": {
   "giorni": [
    {
@@ -8628,9 +8635,9 @@
    },
    {
     "giorno": "2026-10-18",
-    "auto": 12,
-    "persone": 43,
-    "incasso": 516.0
+    "auto": 13,
+    "persone": 48,
+    "incasso": 576.0
    }
   ],
   "ore": [
@@ -8702,9 +8709,9 @@
    },
    {
     "ora": 11,
-    "auto": 17,
-    "persone": 51,
-    "incasso": 612.0
+    "auto": 18,
+    "persone": 56,
+    "incasso": 672.0
    },
    {
     "ora": 12,
@@ -8818,9 +8825,9 @@
    },
    {
     "giorno": 6,
-    "auto": 33,
-    "persone": 106,
-    "incasso": 1272.0
+    "auto": 34,
+    "persone": 111,
+    "incasso": 1332.0
    }
   ]
  },
@@ -8828,7 +8835,7 @@
   {
    "controllo": "Incasso Vendite = somma TOTALE GENERALE",
    "ok": true,
-   "dettaglio": "13848.00 vs 13848.00"
+   "dettaglio": "13908.00 vs 13908.00"
   },
   {
    "controllo": "Spettacoli = pagine dei PDF",
