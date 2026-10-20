@@ -1,5 +1,5 @@
 {
- "aggiornato": "2026-10-20T17:53",
+ "aggiornato": "2026-10-20T18:30",
  "fonte": [
   "Riepilogo_mensile_C1_10_2026.pdf",
   "Riepilogo_mensile_C1_11_2026.pdf"
@@ -15,9 +15,9 @@
    "4": 158,
    "5": 58
   },
-  "spettacoli": 36,
+  "spettacoli": 35,
   "spettacoli_venduti": 35,
-  "capienza": 2880
+  "capienza": 2800
  },
  "tipologie": [
   {
@@ -682,24 +682,6 @@
     "5": 1
    },
    "incasso": 60.0,
-   "annullati": 0
-  },
-  {
-   "id": "20261102_2015",
-   "data": "2026-11-02",
-   "ora": "20:15",
-   "slot": "20:15",
-   "capienza": 80,
-   "auto": 0,
-   "biglietti": 0,
-   "persone": 0,
-   "tipi": {
-    "2": 0,
-    "3": 0,
-    "4": 0,
-    "5": 0
-   },
-   "incasso": 0,
    "annullati": 0
   }
  ],
@@ -4209,6 +4191,13 @@
   },
   {
    "t": "2026-10-20T17:53",
+   "auto": 530,
+   "biglietti": 530,
+   "persone": 1607,
+   "incasso": 19284
+  },
+  {
+   "t": "2026-10-20T18:30",
    "auto": 530,
    "biglietti": 530,
    "persone": 1607,
@@ -9318,7 +9307,7 @@
   {
    "controllo": "Spettacoli = pagine dei PDF",
    "ok": true,
-   "dettaglio": "36 spettacoli, 36 pagine"
+   "dettaglio": "35 spettacoli, 35 pagine"
   },
   {
    "controllo": "Imponibile IVA + IVA = incasso lordo per riga",
@@ -9328,6 +9317,7 @@
  ],
  "anomalie": [
   "Titoli annullati: 20261023_2115 (1), 20261023_2115 (1), 20261023_2315 (1), 20261023_2358 (1), 20261024_2115 (4), 20261024_2115 (1), 20261030_2215 (3), 20261031_2015 (2), 20261031_2215 (3)",
+  "Spettacoli presenti prima e assenti nei nuovi C1: 20261102_2015",
   "Orari non standard nei C1: 23:58"
  ]
 }
