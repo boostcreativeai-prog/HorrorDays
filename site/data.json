@@ -1,16 +1,16 @@
 {
- "aggiornato": "2026-10-21T12:30",
+ "aggiornato": "2026-10-21T13:28",
  "fonte": [
   "Riepilogo_mensile_C1_10_2026.pdf",
   "Riepilogo_mensile_C1_11_2026.pdf"
  ],
  "totali": {
-  "incasso": 20400.0,
-  "auto": 565,
-  "biglietti": 565,
-  "persone": 1700,
+  "incasso": 20448.0,
+  "auto": 567,
+  "biglietti": 567,
+  "persone": 1704,
   "tipi": {
-   "2": 280,
+   "2": 282,
    "3": 59,
    "4": 167,
    "5": 59
@@ -24,9 +24,9 @@
    "persone": 2,
    "prezzo": 24.0,
    "etichetta": "Auto da 2",
-   "auto": 280,
-   "persone_tot": 560,
-   "incasso": 6720.0
+   "auto": 282,
+   "persone_tot": 564,
+   "incasso": 6768.0
   },
   {
    "persone": 3,
@@ -186,16 +186,16 @@
    "ora": "22:15",
    "slot": "22:15",
    "capienza": 80,
-   "auto": 28,
-   "biglietti": 28,
-   "persone": 74,
+   "auto": 29,
+   "biglietti": 29,
+   "persone": 76,
    "tipi": {
-    "2": 19,
+    "2": 20,
     "3": 2,
     "4": 5,
     "5": 2
    },
-   "incasso": 888.0,
+   "incasso": 912.0,
    "annullati": 0
   },
   {
@@ -456,16 +456,16 @@
    "ora": "22:15",
    "slot": "22:15",
    "capienza": 80,
-   "auto": 19,
-   "biglietti": 19,
-   "persone": 56,
+   "auto": 20,
+   "biglietti": 20,
+   "persone": 58,
    "tipi": {
-    "2": 9,
+    "2": 10,
     "3": 2,
     "4": 8,
     "5": 0
    },
-   "incasso": 672.0,
+   "incasso": 696.0,
    "annullati": 3
   },
   {
@@ -789,10 +789,10 @@
    "codice": "I8",
    "descrizione": "Auto da 2 · 24 €",
    "persone_per_auto": 2,
-   "auto": 280,
-   "biglietti": 280,
-   "persone": 560,
-   "incasso": 6720.0
+   "auto": 282,
+   "biglietti": 282,
+   "persone": 564,
+   "incasso": 6768.0
   },
   {
    "codice": "I2",
@@ -4445,43 +4445,18 @@
    "auto": 565,
    "biglietti": 565,
    "persone": 1700,
-   "incasso": 20400.0
+   "incasso": 20400
+  },
+  {
+   "t": "2026-10-21T13:28",
+   "auto": 567,
+   "biglietti": 567,
+   "persone": 1704,
+   "incasso": 20448.0
   }
  ],
  "capienza_turno": 80,
  "movimenti": [
-  {
-   "da": "2026-10-13T21:28",
-   "a": "2026-10-13T22:35",
-   "id": "20261025_2015",
-   "data": "2026-10-25",
-   "ora": "20:15",
-   "auto": 1,
-   "persone": 4,
-   "incasso": 48.0,
-   "tipi": {
-    "2": 0,
-    "3": 0,
-    "4": 1,
-    "5": 0
-   }
-  },
-  {
-   "da": "2026-10-13T21:28",
-   "a": "2026-10-13T22:35",
-   "id": "20261031_2215",
-   "data": "2026-10-31",
-   "ora": "22:15",
-   "auto": 1,
-   "persone": 2,
-   "incasso": 24.0,
-   "tipi": {
-    "2": 1,
-    "3": 0,
-    "4": 0,
-    "5": 0
-   }
-  },
   {
    "da": "2026-10-13T21:28",
    "a": "2026-10-13T22:35",
@@ -9249,9 +9224,41 @@
     "4": 0,
     "5": 0
    }
+  },
+  {
+   "da": "2026-10-21T12:30",
+   "a": "2026-10-21T13:28",
+   "id": "20261024_2215",
+   "data": "2026-10-24",
+   "ora": "22:15",
+   "auto": 1,
+   "persone": 2,
+   "incasso": 24.0,
+   "tipi": {
+    "2": 1,
+    "3": 0,
+    "4": 0,
+    "5": 0
+   }
+  },
+  {
+   "da": "2026-10-21T12:30",
+   "a": "2026-10-21T13:28",
+   "id": "20261030_2215",
+   "data": "2026-10-30",
+   "ora": "22:15",
+   "auto": 1,
+   "persone": 2,
+   "incasso": 24.0,
+   "tipi": {
+    "2": 1,
+    "3": 0,
+    "4": 0,
+    "5": 0
+   }
   }
  ],
- "movimenti_totali": 508,
+ "movimenti_totali": 510,
  "picchi": {
   "giorni": [
    {
@@ -9352,9 +9359,9 @@
    },
    {
     "giorno": "2026-10-21",
-    "auto": 13,
-    "persone": 26,
-    "incasso": 312.0
+    "auto": 15,
+    "persone": 30,
+    "incasso": 360.0
    }
   ],
   "ore": [
@@ -9432,9 +9439,9 @@
    },
    {
     "ora": 12,
-    "auto": 30,
-    "persone": 83,
-    "incasso": 996.0
+    "auto": 32,
+    "persone": 87,
+    "incasso": 1044.0
    },
    {
     "ora": 13,
@@ -9518,9 +9525,9 @@
    },
    {
     "giorno": 2,
-    "auto": 67,
-    "persone": 189,
-    "incasso": 2268.0
+    "auto": 69,
+    "persone": 193,
+    "incasso": 2316.0
    },
    {
     "giorno": 3,
@@ -9552,7 +9559,7 @@
   {
    "controllo": "Incasso Vendite = somma TOTALE GENERALE",
    "ok": true,
-   "dettaglio": "20400.00 vs 20400.00"
+   "dettaglio": "20448.00 vs 20448.00"
   },
   {
    "controllo": "Spettacoli = pagine dei PDF",
