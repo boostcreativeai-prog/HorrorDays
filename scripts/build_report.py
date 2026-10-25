@@ -22,14 +22,17 @@ OUT = PREV = args.xlsx
 SNAP = dt.datetime.now(ZoneInfo("Europe/Rome")).replace(tzinfo=None, second=0, microsecond=0)
 
 # Ogni titolo d'accesso è un'auto (la capienza del C1 è in auto). Le persone dipendono dal prezzo:
-# 24 € = 2 persone, 36 € = 3, 48 € = 4, 60 € = 5, cioè 12 € a persona. Prezzi diversi si definiscono
-# nel foglio Tariffe (colonna "Persone per auto"), altrimenti finiscono tra le anomalie.
-PERSONE_PER_PREZZO = {24.0: 2, 36.0: 3, 48.0: 4, 60.0: 5}
+# 24 € = 2 persone, 36 € = 3, 48 € = 4, 60 € = 5, cioè 12 € a persona. Fa eccezione il biglietto a botteghino
+# da 15 € (es. 02/11): 15 € a persona, quindi 1 persona e nessuna auto. Prezzi diversi si definiscono nel foglio
+# Tariffe (colonne "Persone per biglietto" e "Auto per biglietto"), altrimenti finiscono tra le anomalie.
+PERSONE_PER_PREZZO = {15.0: 1, 24.0: 2, 36.0: 3, 48.0: 4, 60.0: 5}
+AUTO_PER_PREZZO = {15.0: 0}  # gli altri prezzi valgono 1 auto
 EURO_A_PERSONA = 12.0
+EURO_BOTTEGHINO = 15.0
 # Capienza reale del drive-in: 80 auto per turno (il C1 riporta 200, che non è il limite effettivo).
 # Le persone non hanno un limite proprio: dipendono dalle auto.
 CAPIENZA_AUTO = 80
-TIPI = sorted(set(PERSONE_PER_PREZZO.values()))  # 2, 3, 4, 5
+TIPI = sorted(p for prezzo, p in PERSONE_PER_PREZZO.items() if AUTO_PER_PREZZO.get(prezzo, 1))  # 2, 3, 4, 5
 
 pdfs = sorted(glob.glob(os.path.join(args.c1, "*.pdf")) + glob.glob(os.path.join(args.c1, "*.PDF")))
 if not pdfs:
@@ -81,10 +84,15 @@ shows.sort(key=lambda s: (s["date"], s["time"]))
 sales.sort(key=lambda s: (s["date"], s["time"]))
 
 # ---- stato precedente ----
-def descr_tipo(p, prezzo):
-    return f"Auto da {p} · {prezzo:.0f} €"
+def descr_tipo(p, a, prezzo):
+    return f"Auto da {p} · {prezzo:.0f} €" if a else f"Botteghino · {prezzo / p:.0f} € a persona"
 
-# tariffe: [codice, descrizione, tipologia, persone per auto, da definire]
+# La cassa riusa lo stesso codice con prezzi diversi (I1 = 48 € in auto, 15 € a botteghino il 02/11):
+# ogni tariffa è quindi codice + prezzo.
+def chiave_tariffa(code, prezzo):
+    return f"{code} {prezzo:g}€"
+
+# tariffe: [tariffa, descrizione, tipologia, persone per biglietto, auto per biglietto, da definire]
 tariffe = []
 storico = []  # [data, auto, incasso, persone]
 prev_ids = []
@@ -93,7 +101,14 @@ if PREV and os.path.exists(PREV):
     for r in wbp["Tariffe"].iter_rows(min_row=2, values_only=True):
         if r[0]:
             pers = int(r[3]) if isinstance(r[3], (int, float)) and r[3] > 0 else None
-            tariffe.append([r[0], r[1], r[2], pers, r[1] == "DA DEFINIRE"])
+            auto_b = int(r[4]) if len(r) > 4 and isinstance(r[4], (int, float)) and r[4] >= 0 else None
+            key = str(r[0])
+            if " " not in key:  # fogli di prima: solo il codice, il prezzo è nella descrizione ("Auto da 4 · 48 €")
+                mp = re.search(r"(\d+(?:[.,]\d+)?) €", str(r[1] or ""))
+                if not mp:
+                    continue
+                key = chiave_tariffa(key, float(mp.group(1).replace(",", ".")))
+            tariffe.append([key, r[1], r[2], pers, auto_b, r[1] == "DA DEFINIRE"])
     ws_old = wbp["Storico"]
     cols = {str(c.value).strip(): i for i, c in enumerate(ws_old[1]) if c.value}
     c_auto = cols.get("Auto totali", cols.get("Biglietti totali", 1))
@@ -105,36 +120,43 @@ if PREV and os.path.exists(PREV):
             storico.append([r[0], r[c_auto], r[c_inc], pers])
     prev_ids = [r[0] for r in wbp["Spettacoli"].iter_rows(min_row=2, values_only=True) if r[0]]
 
-# persone per auto di ogni codice: prima il foglio Tariffe, poi la regola sul prezzo
+# persone e auto per biglietto di ogni tariffa: prima il foglio Tariffe, poi la regola sul prezzo
 prezzo_codice = {}
 for s in sales:
-    prezzo_codice.setdefault(s["code"], s["prezzo"])
+    s["tar"] = chiave_tariffa(s["code"], s["prezzo"])
+    prezzo_codice.setdefault(s["tar"], s["prezzo"])
 known = {t[0]: t for t in tariffe}
 new_codes = []
-for code, prezzo in prezzo_codice.items():
+for key, prezzo in prezzo_codice.items():
     p = PERSONE_PER_PREZZO.get(round(prezzo, 2))
-    t = known.get(code)
+    a = AUTO_PER_PREZZO.get(round(prezzo, 2), 1)
+    t = known.get(key)
     if t is None:
-        t = [code, descr_tipo(p, prezzo) if p else "DA DEFINIRE", "Intero" if p else None, p, not p]
-        tariffe.append(t); known[code] = t
+        t = [key, descr_tipo(p, a, prezzo) if p else "DA DEFINIRE", "Intero" if p else None, p, a, not p]
+        tariffe.append(t); known[key] = t
         if not p:
-            new_codes.append(code)
+            new_codes.append(key)
     else:
         if t[3] is None and p:
             t[3] = p
+        if t[4] is None:
+            t[4] = a
         if p and (not t[1] or t[1] == "DA DEFINIRE" or re.fullmatch(r"Tariffa \d+ €", str(t[1]))):
-            t[1] = descr_tipo(p, prezzo)
-        t[4] = t[3] is None
+            t[1] = descr_tipo(p, t[4], prezzo)
+        t[5] = t[3] is None
 non_mappati = []
 for s in sales:
-    s["pers_auto"] = known[s["code"]][3]
+    t = known[s["tar"]]
+    s["pers_auto"] = t[3]  # persone per biglietto
+    s["auto_tit"] = t[4]   # auto per biglietto (0 a botteghino)
+    s["auto"] = s["n"] * s["auto_tit"]
     s["persone"] = s["n"] * s["pers_auto"] if s["pers_auto"] else 0
     if not s["pers_auto"] and s["n"]:
         non_mappati.append(s)
 cur_ids = {s["id"] for s in shows}
 missing = [i for i in prev_ids if i not in cur_ids]
 
-tot_n = sum(s["n"] for s in sales); tot_l = round(sum(s["lordo"] for s in sales), 2)
+tot_n = sum(s["auto"] for s in sales); tot_l = round(sum(s["lordo"] for s in sales), 2)
 tot_p = sum(s["persone"] for s in sales)
 # storico vecchio senza persone: con la regola dei 12 € a persona le persone sono incasso / 12
 for r in storico:
@@ -156,9 +178,9 @@ def stato_turni():
     for s in shows:
         rows = [v for v in sales if v["id"] == s["id"]]
         st[s["id"]] = {"data": s["date"].isoformat(), "ora": s["time"].strftime("%H:%M"),
-                       "auto": sum(v["n"] for v in rows), "persone": sum(v["persone"] for v in rows),
+                       "auto": sum(v["auto"] for v in rows), "persone": sum(v["persone"] for v in rows),
                        "incasso": round(sum(v["lordo"] for v in rows), 2),
-                       "tipi": {str(p): sum(v["n"] for v in rows if v["pers_auto"] == p) for p in TIPI}}
+                       "tipi": {str(p): sum(v["auto"] for v in rows if v["pers_auto"] == p) for p in TIPI}}
     return st
 
 registro = {"stato": None, "movimenti": []}
@@ -228,35 +250,39 @@ wsT = wb.create_sheet("Tariffe"); wsY = wb.create_sheet("Tipologie"); wsS = wb.c
 wsV = wb.create_sheet("Vendite"); wsP = wb.create_sheet("Per tariffa"); wsR = wb.create_sheet("Per serata")
 wsH = wb.create_sheet("Storico"); wsM = wb.create_sheet("Registro vendite"); wsK = wb.create_sheet("Picchi vendite")
 
-# Tariffe (modificabile: la colonna D decide quante persone vale ogni auto)
-header(wsT, ["Codice titolo", "Descrizione", "Tipologia (Intero/Ridotto/Omaggio)", "Persone per auto"], [14, 26, 30, 18])
+# Tariffe (modificabile: le colonne D ed E decidono quante persone e quante auto vale ogni biglietto)
+header(wsT, ["Tariffa (codice e prezzo)", "Descrizione", "Tipologia (Intero/Ridotto/Omaggio)", "Persone per biglietto",
+             "Auto per biglietto"], [16, 30, 30, 18, 16])
 for i, t in enumerate(tariffe, 2):
-    for c, v in enumerate(t[:4], 1): wsT.cell(row=i, column=c, value=v)
-body(wsT, len(tariffe), 4, {})
+    for c, v in enumerate(t[:5], 1): wsT.cell(row=i, column=c, value=v)
+body(wsT, len(tariffe), 5, {})
 for i, t in enumerate(tariffe, 2):
-    if t[4]:
-        for c in range(1, 5): wsT.cell(row=i, column=c).fill = YEL
+    if t[5]:
+        for c in range(1, 6): wsT.cell(row=i, column=c).fill = YEL
 NT = len(tariffe) + 1
 TR = "Tariffe!$A$2:$A$200"
 
-# Vendite: una riga per spettacolo e tariffa. Ogni titolo è un'auto.
+# Vendite: una riga per spettacolo e tariffa. Ogni titolo è un'auto, tranne a botteghino (0 auto).
 nV = len(sales)
-header(wsV, ["ID spettacolo", "Data", "Ora", "Settore", "Codice titolo", "Descrizione tariffa", "Prezzo unitario",
-             "N° auto (titoli emessi)", "N° annullati", "Incasso lordo", "Prevendita", "Imponibile IVA", "IVA",
-             "Mese C1 di origine", "Persone per auto", "Persone"],
-       [16, 12, 8, 12, 12, 22, 13, 12, 11, 13, 12, 14, 11, 12, 12, 10])
+header(wsV, ["ID spettacolo", "Data", "Ora", "Settore", "Tariffa (codice e prezzo)", "Descrizione tariffa", "Prezzo unitario",
+             "N° auto", "N° annullati", "Incasso lordo", "Prevendita", "Imponibile IVA", "IVA",
+             "Mese C1 di origine", "Persone per biglietto", "Persone", "N° titoli emessi", "Auto per biglietto"],
+       [16, 12, 8, 12, 14, 26, 13, 10, 11, 13, 12, 14, 11, 12, 12, 10, 12, 12])
 for i, s in enumerate(sales, 2):
-    vals = [s["id"], s["date"], s["time"], s["settore"], s["code"],
+    vals = [s["id"], s["date"], s["time"], s["settore"], s["tar"],
             f'=IFERROR(INDEX(Tariffe!$B$2:$B$200,MATCH(E{i},{TR},0)),"DA DEFINIRE")',
-            s["prezzo"], s["n"], s["ann"], s["lordo"], s["prev"], s["impiva"], s["iva"], s["mese"],
-            f'=IFERROR(INDEX(Tariffe!$D$2:$D$200,MATCH(E{i},{TR},0))*1,0)', f"=H{i}*O{i}"]
+            s["prezzo"], f"=Q{i}*R{i}", s["ann"], s["lordo"], s["prev"], s["impiva"], s["iva"], s["mese"],
+            f'=IFERROR(INDEX(Tariffe!$D$2:$D$200,MATCH(E{i},{TR},0))*1,0)', f"=Q{i}*O{i}",
+            s["n"], f'=IFERROR(INDEX(Tariffe!$E$2:$E$200,MATCH(E{i},{TR},0))*1,1)']
     for c, v in enumerate(vals, 1): wsV.cell(row=i, column=c, value=v)
-body(wsV, nV, 16, {2: DATE, 3: TIME, 7: EUR, 8: INT, 9: INT, 10: EUR, 11: EUR, 12: EUR, 13: EUR, 15: INT, 16: INT})
+body(wsV, nV, 18, {2: DATE, 3: TIME, 7: EUR, 8: INT, 9: INT, 10: EUR, 11: EUR, 12: EUR, 13: EUR, 15: INT, 16: INT, 17: INT, 18: INT})
 V = lambda col: f"Vendite!${col}$2:${col}$1000"
 
 # Tipologie: auto da 2, 3, 4 persone
 header(wsY, ["Tipologia", "Prezzo", "Persone per auto", "N° auto", "Persone", "Incasso", "% delle auto"], [22, 10, 16, 10, 10, 13, 13])
 tipi_rows = [(f"Auto da {p} persone", p * EURO_A_PERSONA, p) for p in TIPI]
+if any(not v["auto_tit"] for v in sales):
+    tipi_rows.append((f"Botteghino ({EURO_BOTTEGHINO:.0f} € a persona, senza auto)", EURO_BOTTEGHINO, 1))
 if non_mappati:
     tipi_rows.append(("Da definire (prezzo non previsto)", None, 0))
 NY = len(tipi_rows) + 1
@@ -299,7 +325,7 @@ wsS.conditional_formatting.add(f"{st}2:{st}{SL}", FormulaRule(formula=[f'{st}2="
 SP = lambda k: f"Spettacoli!${cS[k]}$2:${cS[k]}${SL}"
 
 # Per tariffa
-header(wsP, ["Codice titolo", "Descrizione", "Persone per auto", "N° auto", "Persone", "Incasso", "% sull'incasso totale"], [14, 26, 15, 10, 10, 14, 18])
+header(wsP, ["Tariffa (codice e prezzo)", "Descrizione", "Persone per biglietto", "N° auto", "Persone", "Incasso", "% sull'incasso totale"], [14, 26, 15, 10, 10, 14, 18])
 for i in range(2, NT + 1):
     wsP.cell(row=i, column=1, value=f"=Tariffe!A{i}")
     wsP.cell(row=i, column=2, value=f"=Tariffe!B{i}")
@@ -412,17 +438,17 @@ dash.sheet_view.showGridLines = False
 for c, w in zip("ABCDEFGHIJKLMNO", [2, 22, 18, 3, 22, 18, 3, 22, 18, 3, 12, 8, 9, 10, 13]):
     dash.column_dimensions[c].width = w
 dash["B2"] = "HORROR DAYS · Vendite biglietti"; dash["B2"].font = Font(name="Arial", size=18, bold=True, color="1F2430")
-dash["B3"] = "Drive In Pozzuoli · MIX MARK S.R.L. · fonte: Riepiloghi mensili C1 (18Tickets) · 1 biglietto = 1 auto"; dash["B3"].font = Font(name="Arial", size=10, color="6B7280")
+dash["B3"] = "Drive In Pozzuoli · MIX MARK S.R.L. · fonte: Riepiloghi mensili C1 (18Tickets) · 1 biglietto = 1 auto (botteghino 15 €: 1 persona, nessuna auto)"; dash["B3"].font = Font(name="Arial", size=10, color="6B7280")
 tipi_txt = '&" · "&'.join(f'"Da {p}: "&Tipologie!D{k}' for k, p in enumerate(TIPI, 2))
 kpis = [
     ("Incasso lordo totale", f"=SUM({V('J')})", EUR),
     ("Auto vendute", f"=SUM({V('H')})", INT),
     ("Persone", f"=SUM({V('P')})", INT),
-    ("Persone per auto (media)", f"=IF(SUM({V('H')})>0,SUM({V('P')})/SUM({V('H')}),0)", "0.00"),
+    ("Persone per auto (media)", f"=IF(SUM({V('H')})>0,SUMIF({V('R')},\">0\",{V('P')})/SUM({V('H')}),0)", "0.00"),
     ("Occupazione media (auto)", f"=IF(SUM(Spettacoli!E2:E{SL})>0,SUM(Spettacoli!F2:F{SL})/SUM(Spettacoli!E2:E{SL}),0)", "0.00%"),
     ("Spettacoli con vendite / totali", f'=COUNTIF({SP("stato")},"Venduto")&" / "&COUNTA(Spettacoli!A2:A{SL})', "@"),
     ("Auto per tipologia", "=" + tipi_txt, "@"),
-    ("Prezzo medio per auto", f"=IF(SUM({V('H')})>0,SUM({V('J')})/SUM({V('H')}),0)", EUR),
+    ("Prezzo medio per auto", f"=IF(SUM({V('H')})>0,SUMIF({V('R')},\">0\",{V('J')})/SUM({V('H')}),0)", EUR),
     ("Ultimo aggiornamento", f"=MAX(Storico!A2:A{HL})", "DD/MM/YYYY HH:MM"),
 ]
 pos = [(c, r) for r in (5, 8, 11) for c in ("B", "E", "H")]
@@ -504,44 +530,51 @@ if missing: anomalies.append("Spettacoli presenti prima e assenti nei nuovi C1: 
 odd = sorted({s["time"].strftime("%H:%M") for s in shows} - {"20:15", "21:15", "22:15", "23:15", "23:59", "00:15"})
 if odd: anomalies.append("Orari non standard nei C1: " + ", ".join(odd))
 auto_turno = {}
-for v in sales: auto_turno[v["id"]] = auto_turno.get(v["id"], 0) + v["n"]
+for v in sales: auto_turno[v["id"]] = auto_turno.get(v["id"], 0) + v["auto"]
 pieni = sorted(i for i, n in auto_turno.items() if n > CAPIENZA_AUTO)
 if pieni: anomalies.append(f"Turni oltre la capienza di {CAPIENZA_AUTO} auto: " + ", ".join(f"{i} ({auto_turno[i]})" for i in pieni))
+atteso = sum(v["persone"] * (EURO_A_PERSONA if v["auto_tit"] else EURO_BOTTEGHINO) for v in sales)
 if non_mappati:
     anomalies.append("Auto senza numero di persone (prezzo non previsto, da indicare nel foglio Tariffe): " +
                      ", ".join(f"{s['id']} {s['code']} {s['prezzo']:.2f} € ({s['n']})" for s in non_mappati))
-elif abs(tot_p * EURO_A_PERSONA - tot_l) > 0.01:
-    anomalies.append(f"Persone × {EURO_A_PERSONA:.0f} € ({tot_p * EURO_A_PERSONA:.2f} €) diverso dall'incasso ({tot_l:.2f} €): controlla le persone per auto nel foglio Tariffe")
+elif abs(atteso - tot_l) > 0.01:
+    anomalies.append(f"Persone × prezzo a persona ({EURO_A_PERSONA:.0f} € in auto, {EURO_BOTTEGHINO:.0f} € a botteghino: {atteso:.2f} €) "
+                     f"diverso dall'incasso ({tot_l:.2f} €): controlla persone e auto per biglietto nel foglio Tariffe")
 
 tmap = {t[0]: t for t in tariffe}
 def slot(t):
     return "23:59" if t >= dt.time(23, 30) else t.strftime("%H:%M")
 def per_tipo(rows):
-    return {str(p): sum(v["n"] for v in rows if v["pers_auto"] == p) for p in TIPI}
+    return {str(p): sum(v["auto"] for v in rows if v["pers_auto"] == p) for p in TIPI}
+def botteghino(rows):
+    rows = [v for v in rows if not v["auto_tit"]]
+    return {"biglietti": sum(v["n"] for v in rows), "persone": sum(v["persone"] for v in rows),
+            "incasso": round(sum(v["lordo"] for v in rows), 2)}
 def show_data(s):
     rows = [v for v in sales if v["id"] == s["id"]]
-    auto = sum(v["n"] for v in rows)
+    auto = sum(v["auto"] for v in rows)
     return {"id": s["id"], "data": s["date"].isoformat(), "ora": s["time"].strftime("%H:%M"), "slot": slot(s["time"]),
             "capienza": s["cap"], "auto": auto, "biglietti": auto, "persone": sum(v["persone"] for v in rows),
-            "tipi": per_tipo(rows), "incasso": round(sum(v["lordo"] for v in rows), 2),
+            "tipi": per_tipo(rows), "botteghino": botteghino(rows), "incasso": round(sum(v["lordo"] for v in rows), 2),
             "annullati": sum(v["ann"] for v in rows)}
 data = {
     "aggiornato": SNAP.strftime("%Y-%m-%dT%H:%M"),
     "fonte": [os.path.basename(p) for p in pdfs],
     # 1 biglietto = 1 auto; la capienza è in auto
     "totali": {"incasso": tot_l, "auto": tot_n, "biglietti": tot_n, "persone": tot_p, "tipi": per_tipo(sales),
+               "botteghino": botteghino(sales),
                "spettacoli": len(shows), "spettacoli_venduti": len({s["id"] for s in sales if s["n"]}),
                "capienza": sum(s["cap"] or 0 for s in shows)},
     "tipologie": [{"persone": p, "prezzo": p * EURO_A_PERSONA, "etichetta": f"Auto da {p}",
-                   "auto": sum(v["n"] for v in sales if v["pers_auto"] == p),
-                   "persone_tot": sum(v["persone"] for v in sales if v["pers_auto"] == p),
-                   "incasso": round(sum(v["lordo"] for v in sales if v["pers_auto"] == p), 2)} for p in TIPI],
+                   "auto": sum(v["auto"] for v in sales if v["pers_auto"] == p),
+                   "persone_tot": sum(v["persone"] for v in sales if v["pers_auto"] == p and v["auto_tit"]),
+                   "incasso": round(sum(v["lordo"] for v in sales if v["pers_auto"] == p and v["auto_tit"]), 2)} for p in TIPI],
     "spettacoli": [show_data(s) for s in shows],
-    "tariffe": [{"codice": c, "descrizione": t[1] or c, "persone_per_auto": t[3],
-                 "auto": sum(v["n"] for v in sales if v["code"] == c),
-                 "biglietti": sum(v["n"] for v in sales if v["code"] == c),
-                 "persone": sum(v["persone"] for v in sales if v["code"] == c),
-                 "incasso": round(sum(v["lordo"] for v in sales if v["code"] == c), 2)} for c, t in tmap.items()],
+    "tariffe": [{"codice": c, "descrizione": t[1] or c, "persone_per_auto": t[3], "auto_per_biglietto": t[4],
+                 "auto": sum(v["auto"] for v in sales if v["tar"] == c),
+                 "biglietti": sum(v["n"] for v in sales if v["tar"] == c),
+                 "persone": sum(v["persone"] for v in sales if v["tar"] == c),
+                 "incasso": round(sum(v["lordo"] for v in sales if v["tar"] == c), 2)} for c, t in tmap.items()],
     "storico": [{"t": (r[0].strftime("%Y-%m-%dT%H:%M") if isinstance(r[0], dt.datetime) else str(r[0])),
                  "auto": r[1], "biglietti": r[1], "persone": r[3], "incasso": r[2]} for r in storico],
     "capienza_turno": CAPIENZA_AUTO,

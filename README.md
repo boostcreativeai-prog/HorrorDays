@@ -20,8 +20,12 @@ quindi solo acquisti andati a buon fine.
 
 **Auto e persone.** Ogni biglietto è un'auto, e la capienza del C1 (200 per turno) è in auto. Le persone
 dipendono dal prezzo: 24 € = 2 persone, 36 € = 3, 48 € = 4, 60 € = 5 (sempre 12 € a persona). Il report mostra auto e
-persone per turno, serata e tipologia. Un prezzo diverso (es. un omaggio a 0 €) finisce tra le anomalie:
-indica quante persone vale nella colonna "Persone per auto" del foglio Tariffe dell'Excel in `data/`.
+persone per turno, serata e tipologia. Fa eccezione il **botteghino** (es. 02/11): 15 € a persona, quindi ogni
+biglietto da 15 € è 1 persona e **nessuna auto**. Conta in persone e incasso, non in auto, tipologie e occupazione.
+La cassa riusa lo stesso codice con prezzi diversi (I1 = 48 € in auto, 15 € a botteghino), quindi ogni tariffa è
+codice + prezzo (es. `I1 48€`, `I1 15€`). Un prezzo diverso (es. un omaggio a 0 €) finisce tra le anomalie:
+indica quante persone e quante auto vale nelle colonne "Persone per biglietto" e "Auto per biglietto" del foglio
+Tariffe dell'Excel in `data/`.
 La capienza è di **80 auto per turno** (2.800 posti auto su 35 turni) (`CAPIENZA_AUTO` in `scripts/build_report.py`), non i 200 del C1.
 
 **Quando si vende.** Il C1 non riporta l'ora di ogni acquisto. A ogni aggiornamento lo script confronta ogni turno
