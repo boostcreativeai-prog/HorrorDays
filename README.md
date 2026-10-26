@@ -26,6 +26,9 @@ La cassa riusa lo stesso codice con prezzi diversi (I1 = 48 € in auto, 15 € 
 codice + prezzo (es. `I1 48€`, `I1 15€`). Un prezzo diverso (es. un omaggio a 0 €) finisce tra le anomalie:
 indica quante persone e quante auto vale nelle colonne "Persone per biglietto" e "Auto per biglietto" del foglio
 Tariffe dell'Excel in `data/`.
+**Incasso per turno.** Nella sezione Serate e turni il pulsante **Incasso** mostra l'incasso lordo di ogni turno
+(botteghino compreso), con il totale per serata e per orario; sotto c'è il grafico dell'incasso di tutti i turni.
+Si aggiorna da solo a ogni estrazione, come il resto della pagina.
 La capienza è di **80 auto per turno** (2.800 posti auto su 35 turni) (`CAPIENZA_AUTO` in `scripts/build_report.py`), non i 200 del C1.
 
 **Quando si vende.** Il C1 non riporta l'ora di ogni acquisto. A ogni aggiornamento lo script confronta ogni turno
