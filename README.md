@@ -29,7 +29,7 @@ Tariffe dell'Excel in `data/`.
 **Incasso per turno.** Nella sezione Serate e turni il pulsante **Incasso** mostra l'incasso lordo di ogni turno
 (botteghino compreso), con il totale per serata e per orario; sotto c'è il grafico dell'incasso di tutti i turni.
 Si aggiorna da solo a ogni estrazione, come il resto della pagina.
-La capienza è di **80 auto per turno** (2.800 posti auto su 35 turni) (`CAPIENZA_AUTO` in `scripts/build_report.py`), non i 200 del C1.
+La capienza è di **80 auto per turno** (3.360 posti auto su 42 turni, compresi i due turni extra delle 19:15 del 31/10 e dell'01/11) (`CAPIENZA_AUTO` in `scripts/build_report.py`), non i 200 del C1.
 
 **Quando si vende.** Il C1 non riporta l'ora di ogni acquisto. A ogni aggiornamento lo script confronta ogni turno
 con l'aggiornamento precedente e salva le differenze in `data/movimenti.json` (registro vendite): così si sa

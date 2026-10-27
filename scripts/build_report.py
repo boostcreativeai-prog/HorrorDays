@@ -343,8 +343,9 @@ for c in range(1, 8):
     x = wsP.cell(row=tr, column=c); x.font = Font(name="Arial", size=10, bold=True); x.border = Border(top=Side(style="thin", color="1F2430"))
 for c, f in ((4, INT), (5, INT), (6, EUR), (7, PCT)): wsP.cell(row=tr, column=c).number_format = f
 
-# Per serata: auto e persone per turno (fasce: 23:59 include l'orario 23:58 presente nel C1 del 23/10)
-slots = [("20:15", "20:00", "21:00"), ("21:15", "21:00", "22:00"), ("22:15", "22:00", "23:00"), ("23:15", "23:00", "23:30"), ("23:59", "23:30", "24:00")]
+# Per serata: auto e persone per turno (fasce: 23:59 include l'orario 23:58 presente nel C1 del 23/10;
+# 19:15 sono i turni extra del 31/10 e dell'01/11)
+slots = [("19:15", "19:00", "20:00"), ("20:15", "20:00", "21:00"), ("21:15", "21:00", "22:00"), ("22:15", "22:00", "23:00"), ("23:15", "23:00", "23:30"), ("23:59", "23:30", "24:00")]
 dates = sorted({s["date"] for s in shows}); ND = len(dates)
 NSL = len(slots)
 A0, P0, Y0 = 6, 6 + NSL, 6 + 2 * NSL          # prime colonne di auto per turno, persone per turno, auto per tipologia
@@ -527,7 +528,7 @@ if annullati: anomalies.append("Titoli annullati: " + ", ".join(f"{a} ({n})" for
 if prevendita: anomalies.append("Prevendita diversa da zero: " + ", ".join(f"{a} ({v:.2f} €)" for a, v in prevendita))
 if new_codes: anomalies.append("Codici tariffa nuovi da definire: " + ", ".join(new_codes))
 if missing: anomalies.append("Spettacoli presenti prima e assenti nei nuovi C1: " + ", ".join(map(str, missing)))
-odd = sorted({s["time"].strftime("%H:%M") for s in shows} - {"20:15", "21:15", "22:15", "23:15", "23:59", "00:15"})
+odd = sorted({s["time"].strftime("%H:%M") for s in shows} - {"19:15", "20:15", "21:15", "22:15", "23:15", "23:59", "00:15"})
 if odd: anomalies.append("Orari non standard nei C1: " + ", ".join(odd))
 auto_turno = {}
 for v in sales: auto_turno[v["id"]] = auto_turno.get(v["id"], 0) + v["auto"]
