@@ -1,18 +1,18 @@
 {
- "aggiornato": "2026-10-29T08:55",
+ "aggiornato": "2026-10-29T09:33",
  "fonte": [
   "Riepilogo_mensile_C1_10_2026.pdf",
   "Riepilogo_mensile_C1_11_2026.pdf"
  ],
  "totali": {
-  "incasso": 83808.0,
-  "auto": 2216,
-  "biglietti": 2216,
-  "persone": 6981,
+  "incasso": 83880.0,
+  "auto": 2218,
+  "biglietti": 2218,
+  "persone": 6987,
   "tipi": {
-   "2": 965,
+   "2": 966,
    "3": 227,
-   "4": 762,
+   "4": 763,
    "5": 262
   },
   "botteghino": {
@@ -29,9 +29,9 @@
    "persone": 2,
    "prezzo": 24.0,
    "etichetta": "Auto da 2",
-   "auto": 965,
-   "persone_tot": 1930,
-   "incasso": 23160.0
+   "auto": 966,
+   "persone_tot": 1932,
+   "incasso": 23184.0
   },
   {
    "persone": 3,
@@ -45,9 +45,9 @@
    "persone": 4,
    "prezzo": 48.0,
    "etichetta": "Auto da 4",
-   "auto": 762,
-   "persone_tot": 3048,
-   "incasso": 36576.0
+   "auto": 763,
+   "persone_tot": 3052,
+   "incasso": 36624.0
   },
   {
    "persone": 5,
@@ -410,11 +410,11 @@
    "ora": "20:15",
    "slot": "20:15",
    "capienza": 80,
-   "auto": 36,
-   "biglietti": 36,
-   "persone": 113,
+   "auto": 37,
+   "biglietti": 37,
+   "persone": 115,
    "tipi": {
-    "2": 18,
+    "2": 19,
     "3": 2,
     "4": 9,
     "5": 7
@@ -424,7 +424,7 @@
     "persone": 0,
     "incasso": 0
    },
-   "incasso": 1356.0,
+   "incasso": 1380.0,
    "annullati": 1
   },
   {
@@ -870,13 +870,13 @@
    "ora": "23:15",
    "slot": "23:15",
    "capienza": 80,
-   "auto": 21,
-   "biglietti": 21,
-   "persone": 74,
+   "auto": 22,
+   "biglietti": 22,
+   "persone": 78,
    "tipi": {
     "2": 5,
     "3": 5,
-    "4": 6,
+    "4": 7,
     "5": 5
    },
    "botteghino": {
@@ -884,7 +884,7 @@
     "persone": 0,
     "incasso": 0
    },
-   "incasso": 888.0,
+   "incasso": 936.0,
    "annullati": 0
   },
   {
@@ -1032,20 +1032,20 @@
    "descrizione": "Auto da 4 · 48 €",
    "persone_per_auto": 4,
    "auto_per_biglietto": 1,
-   "auto": 762,
-   "biglietti": 762,
-   "persone": 3048,
-   "incasso": 36576.0
+   "auto": 763,
+   "biglietti": 763,
+   "persone": 3052,
+   "incasso": 36624.0
   },
   {
    "codice": "I8 24€",
    "descrizione": "Auto da 2 · 24 €",
    "persone_per_auto": 2,
    "auto_per_biglietto": 1,
-   "auto": 965,
-   "biglietti": 965,
-   "persone": 1930,
-   "incasso": 23160.0
+   "auto": 966,
+   "biglietti": 966,
+   "persone": 1932,
+   "incasso": 23184.0
   },
   {
    "codice": "I2 36€",
@@ -6922,43 +6922,18 @@
    "auto": 2216,
    "biglietti": 2216,
    "persone": 6981,
-   "incasso": 83808.0
+   "incasso": 83808
+  },
+  {
+   "t": "2026-10-29T09:33",
+   "auto": 2218,
+   "biglietti": 2218,
+   "persone": 6987,
+   "incasso": 83880.0
   }
  ],
  "capienza_turno": 80,
  "movimenti": [
-  {
-   "da": "2026-10-27T11:33",
-   "a": "2026-10-27T12:04",
-   "id": "20261031_2015",
-   "data": "2026-10-31",
-   "ora": "20:15",
-   "auto": 1,
-   "persone": 4,
-   "incasso": 48.0,
-   "tipi": {
-    "2": 0,
-    "3": 0,
-    "4": 1,
-    "5": 0
-   }
-  },
-  {
-   "da": "2026-10-27T11:33",
-   "a": "2026-10-27T12:04",
-   "id": "20261101_2315",
-   "data": "2026-11-01",
-   "ora": "23:15",
-   "auto": 1,
-   "persone": 4,
-   "incasso": 48.0,
-   "tipi": {
-    "2": 0,
-    "3": 0,
-    "4": 1,
-    "5": 0
-   }
-  },
   {
    "da": "2026-10-27T12:04",
    "a": "2026-10-27T12:30",
@@ -11726,9 +11701,41 @@
     "4": 1,
     "5": 0
    }
+  },
+  {
+   "da": "2026-10-29T08:55",
+   "a": "2026-10-29T09:33",
+   "id": "20261029_2015",
+   "data": "2026-10-29",
+   "ora": "20:15",
+   "auto": 1,
+   "persone": 2,
+   "incasso": 24.0,
+   "tipi": {
+    "2": 1,
+    "3": 0,
+    "4": 0,
+    "5": 0
+   }
+  },
+  {
+   "da": "2026-10-29T08:55",
+   "a": "2026-10-29T09:33",
+   "id": "20261101_2315",
+   "data": "2026-11-01",
+   "ora": "23:15",
+   "auto": 1,
+   "persone": 4,
+   "incasso": 48.0,
+   "tipi": {
+    "2": 0,
+    "3": 0,
+    "4": 1,
+    "5": 0
+   }
   }
  ],
- "movimenti_totali": 1505,
+ "movimenti_totali": 1507,
  "picchi": {
   "giorni": [
    {
@@ -11877,9 +11884,9 @@
    },
    {
     "giorno": "2026-10-29",
-    "auto": 25,
-    "persone": 82,
-    "incasso": 984.0
+    "auto": 27,
+    "persone": 88,
+    "incasso": 1056.0
    }
   ],
   "ore": [
@@ -11939,9 +11946,9 @@
    },
    {
     "ora": 9,
-    "auto": 38,
-    "persone": 114,
-    "incasso": 1368.0
+    "auto": 40,
+    "persone": 120,
+    "incasso": 1440.0
    },
    {
     "ora": 10,
@@ -12049,9 +12056,9 @@
    },
    {
     "giorno": 3,
-    "auto": 125,
-    "persone": 387,
-    "incasso": 4644.0
+    "auto": 127,
+    "persone": 393,
+    "incasso": 4716.0
    },
    {
     "giorno": 4,
@@ -12077,7 +12084,7 @@
   {
    "controllo": "Incasso Vendite = somma TOTALE GENERALE",
    "ok": true,
-   "dettaglio": "83808.00 vs 83808.00"
+   "dettaglio": "83880.00 vs 83880.00"
   },
   {
    "controllo": "Spettacoli = pagine dei PDF",
