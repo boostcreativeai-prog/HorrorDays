@@ -354,8 +354,10 @@ function heat(){
     h+=`<div class="day">${ddmm(dd)}<span>${GG[wd]}</span></div>`;
     for(const sl of SLOTS){const s=day.find(x=>x.slot===sl);const n=s?val(s):null;
       const a=n?0.25+0.75*n/max:0;
-      const tip=s?`${ddmm(dd)} ${s.ora} · ${auto(s)} auto su ${s.capienza} · ${pers(s)} persone`+(s.tipi?` (${tipiP().map(p=>`da ${p}: ${s.tipi[p]||0}`).join(", ")})`:"")+` · ${eur(s.incasso)}`:"";
-      h+=n===null?`<div class="cell" title="Nessuno spettacolo">·</div>`:`<div class="cell ${n?"on":""}" style="${n?`background:rgba(212,58,49,${a.toFixed(2)})`:""}" title="${tip}">${fmt(n)}</div>`}
+      const tip=s?`${ddmm(dd)} ${s.ora} · ${auto(s)} auto su ${s.capienza} · ${pers(s)} persone`+(s.tipi?` (${tipiP().map(p=>`da ${p}: ${s.tipi[p]||0}`).join(", ")})`:"")+(bott(s).biglietti?` · botteghino: ${int(bott(s).persone)} persone (${eur(bott(s).incasso)})`:"")+` · ${eur(s.incasso)}`:"";
+      // contorno ambra: turno con vendite a botteghino (persone senza auto)
+      const bt=s&&bott(s).biglietti?"box-shadow:inset 0 0 0 1px "+C.amber+";":"";
+      h+=n===null?`<div class="cell" title="Nessuno spettacolo">·</div>`:`<div class="cell ${n?"on":""}" style="${n?`background:rgba(212,58,49,${a.toFixed(2)});`:""}${bt}" title="${tip}">${fmt(n)}</div>`}
     const tot=day.reduce((a,s)=>a+val(s),0);
     h+=`<div class="cell tot" title="${ddmm(dd)}: ${heatMode==="incasso"?eur(tot):int(tot)}">${fmt(tot)}</div>`}
   // totale per turno su tutte le serate
@@ -364,7 +366,7 @@ function heat(){
   h+=`<div class="day">TOT<span>per turno</span></div>${SLOTS.map(sl=>`<div class="cell sum" title="Turno ${sl}: ${heatMode==="incasso"?eur(colTot(sl)):int(colTot(sl))}">${fmt(colTot(sl))}</div>`).join("")}<div class="cell tot" title="${heatMode==="incasso"?eur(all):int(all)}">${fmt(all)}</div>`;
   const el=document.getElementById("heat");el.innerHTML=h;el.classList.toggle("eur",heatMode==="incasso");el.style.setProperty("--n",SLOTS.length);
   document.getElementById("heatSub").textContent=heatMode==="auto"
-    ?`Auto per turno su una capienza di ${D.capienza_turno||80}: più il rosso è acceso, più il turno è pieno`
+    ?`Auto per turno su una capienza di ${D.capienza_turno||80}: più il rosso è acceso, più il turno è pieno`+(D.totali.botteghino?.biglietti?" · contorno ambra: vendite a botteghino (persone senza auto)":"")
     :heatMode==="persone"?"Persone per turno (auto × persone per tipologia)"
     :"Incasso lordo per turno in euro (botteghino compreso), aggiornato a ogni estrazione: più il rosso è acceso, più il turno ha incassato";
 }

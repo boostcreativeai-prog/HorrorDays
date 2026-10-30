@@ -77,6 +77,36 @@ for p in pdfs:
             shows.append(dict(id=sid, date=date, time=dt.time(hh, mm), titolo=tit, locale=loc, codloc=cod,
                               cap=cap, tot_n=int(tg.group(1)), tot=float(tg.group(2)), mese=mese))
 
+# Turni: la cassa a volte crea due eventi per lo stesso turno con orari a 1-2 minuti di distanza
+# (il 02/11: 20:15 per il botteghino e 20:16 per le auto online; 23:58 e 23:59). Ogni pagina del C1 viene
+# ricondotta al suo turno standard (se dista al massimo 10 minuti; dalle 23:30 è il turno delle 23:59)
+# e le pagine dello stesso turno diventano un solo spettacolo, con le vendite sommate e capienza 80 auto.
+TURNI = [dt.time(19, 15), dt.time(20, 15), dt.time(21, 15), dt.time(22, 15), dt.time(23, 15), dt.time(23, 59)]
+def turno(t):
+    if t >= dt.time(23, 30):
+        return dt.time(23, 59)
+    m = t.hour * 60 + t.minute
+    return next((x for x in TURNI if abs(x.hour * 60 + x.minute - m) <= 10), t)
+def turno_id(sid):
+    """ID dello spettacolo (AAAAMMGG_HHMM) ricondotto al turno standard: 20261102_2016 -> 20261102_2015."""
+    d, o = sid.split("_")
+    return d + "_" + turno(dt.time(int(o[:2]), int(o[2:]))).strftime("%H%M")
+
+ore_c1 = sorted({s["time"].strftime("%H:%M") for s in shows})
+turni = {}
+for s in shows:
+    t = turno(s["time"]); sid = s["date"].strftime("%Y%m%d") + "_" + t.strftime("%H%M")
+    m = turni.get(sid)
+    if m is None:
+        turni[sid] = {**s, "id": sid, "time": t, "ore_c1": [s["time"].strftime("%H:%M")], "pagine": 1}
+    else:
+        m["ore_c1"].append(s["time"].strftime("%H:%M")); m["pagine"] += 1
+        m["tot_n"] += s["tot_n"]; m["tot"] += s["tot"]; m["cap"] = m["cap"] or s["cap"]
+for v in sales:
+    v["time"] = turno(v["time"]); v["id"] = v["date"].strftime("%Y%m%d") + "_" + v["time"].strftime("%H%M")
+accorpati = [s for s in turni.values() if s["pagine"] > 1]
+shows = list(turni.values())
+
 for s in shows:
     s["cap_c1"] = s["cap"]
     s["cap"] = CAPIENZA_AUTO
@@ -118,7 +148,7 @@ if PREV and os.path.exists(PREV):
         if r[0]:
             pers = r[c_pers] if c_pers is not None and isinstance(r[c_pers], (int, float)) else None
             storico.append([r[0], r[c_auto], r[c_inc], pers])
-    prev_ids = [r[0] for r in wbp["Spettacoli"].iter_rows(min_row=2, values_only=True) if r[0]]
+    prev_ids = sorted({turno_id(str(r[0])) for r in wbp["Spettacoli"].iter_rows(min_row=2, values_only=True) if r[0]})
 
 # persone e auto per biglietto di ogni tariffa: prima il foglio Tariffe, poi la regola sul prezzo
 prezzo_codice = {}
@@ -187,6 +217,20 @@ registro = {"stato": None, "movimenti": []}
 if os.path.exists(MOV):
     with open(MOV, encoding="utf-8") as f:
         registro = json.load(f)
+# registro scritto prima dell'accorpamento dei turni doppi: ID e orari ricondotti al turno standard
+for m in registro["movimenti"]:
+    m["id"] = turno_id(m["id"]); m["ora"] = m["id"][-4:-2] + ":" + m["id"][-2:]
+if registro.get("stato"):
+    st = {}
+    for sid, a in registro["stato"]["spettacoli"].items():
+        k = turno_id(sid); b = st.get(k)
+        if b is None:
+            st[k] = {**a, "ora": k[-4:-2] + ":" + k[-2:], "tipi": dict(a["tipi"])}
+        else:
+            for f in ("auto", "persone"): b[f] += a[f]
+            b["incasso"] = round(b["incasso"] + a["incasso"], 2)
+            for p, n in a["tipi"].items(): b["tipi"][p] = b["tipi"].get(p, 0) + n
+    registro["stato"]["spettacoli"] = st
 prec = registro.get("stato")
 if prec is None or prec["t"] < SNAP_S:  # nello stesso minuto non si confronta: le differenze restano al giro dopo
     ora_turni, prima = stato_turni(), (prec or {}).get("spettacoli", {})
@@ -315,7 +359,7 @@ for i, s in enumerate(shows, 2):
            [f"=SUMIFS({V('H')},{V('A')},A{i},{V('O')},{p})" for p in TIPI] + \
            [f"=SUMIF({V('A')},A{i},{V('I')})", f"=SUMIF({V('A')},A{i},{V('J')})", f"=SUMIF({V('A')},A{i},{V('L')})",
             f"=SUMIF({V('A')},A{i},{V('M')})", f'=IF(E{i}>0,F{i}/E{i},0)',
-            f'=IF(F{i}>0,"Venduto","Zero vendite")', f"=F{i}+{cS['inc']}{i}/100000+(1000-ROW())/100000000"]
+            f'=IF(F{i}>0,"Venduto",IF({cS["inc"]}{i}>0,"Botteghino","Zero vendite"))', f"=F{i}+{cS['inc']}{i}/100000+(1000-ROW())/100000000"]
     for c, v in enumerate(vals, 1): wsS.cell(row=i, column=c, value=v)
 NSC = 7 + NTP + 7
 body(wsS, nS, NSC, {2: DATE, 4: TIME, **{c: INT for c in range(5, 9 + NTP)}, 9 + NTP: EUR, 10 + NTP: EUR, 11 + NTP: EUR, 12 + NTP: PCT})
@@ -343,7 +387,7 @@ for c in range(1, 8):
     x = wsP.cell(row=tr, column=c); x.font = Font(name="Arial", size=10, bold=True); x.border = Border(top=Side(style="thin", color="1F2430"))
 for c, f in ((4, INT), (5, INT), (6, EUR), (7, PCT)): wsP.cell(row=tr, column=c).number_format = f
 
-# Per serata: auto e persone per turno (fasce: 23:59 include l'orario 23:58 presente nel C1 del 23/10;
+# Per serata: auto e persone per turno (gli orari sono già ricondotti al turno standard;
 # 19:15 sono i turni extra del 31/10 e dell'01/11)
 slots = [("19:15", "19:00", "20:00"), ("20:15", "20:00", "21:00"), ("21:15", "21:00", "22:00"), ("22:15", "22:00", "23:00"), ("23:15", "23:00", "23:30"), ("23:59", "23:30", "24:00")]
 dates = sorted({s["date"] for s in shows}); ND = len(dates)
@@ -518,17 +562,22 @@ checks = []
 def chk(name, ok, detail=""):
     checks.append({"controllo": name, "ok": bool(ok), "dettaglio": detail})
 chk("Incasso Vendite = somma TOTALE GENERALE", abs(tot_l - pdf_tot_gen) < 0.01, f"{tot_l:.2f} vs {pdf_tot_gen:.2f}")
-chk("Spettacoli = pagine dei PDF", len(shows) == total_pages, f"{len(shows)} spettacoli, {total_pages} pagine")
+chk("Spettacoli = pagine dei PDF", sum(s["pagine"] for s in shows) == total_pages,
+    f"{len(shows)} spettacoli, {total_pages} pagine" + (f" ({len(accorpati)} turni doppi accorpati: " +
+    ", ".join(f"{s['date']:%d/%m} {' + '.join(s['ore_c1'])}" for s in accorpati) + ")" if accorpati else ""))
 bad = [s for s in sales if abs(s["impiva"] + s["iva"] - s["lordo"]) > 0.01]
 chk("Imponibile IVA + IVA = incasso lordo per riga", not bad, f"{len(bad)} righe non quadrate")
-annullati = [(s["id"], s["ann"]) for s in sales if s["ann"]]
+annullati = {}
+for s in sales:
+    if s["ann"]: annullati[s["id"]] = annullati.get(s["id"], 0) + s["ann"]
+annullati = sorted(annullati.items())
 prevendita = [(s["id"], s["prev"]) for s in sales if s["prev"]]
 anomalies = []
 if annullati: anomalies.append("Titoli annullati: " + ", ".join(f"{a} ({n})" for a, n in annullati))
 if prevendita: anomalies.append("Prevendita diversa da zero: " + ", ".join(f"{a} ({v:.2f} €)" for a, v in prevendita))
 if new_codes: anomalies.append("Codici tariffa nuovi da definire: " + ", ".join(new_codes))
 if missing: anomalies.append("Spettacoli presenti prima e assenti nei nuovi C1: " + ", ".join(map(str, missing)))
-odd = sorted({s["time"].strftime("%H:%M") for s in shows} - {"19:15", "20:15", "21:15", "22:15", "23:15", "23:59", "00:15"})
+odd = sorted({s["time"].strftime("%H:%M") for s in shows} - {t.strftime("%H:%M") for t in TURNI})
 if odd: anomalies.append("Orari non standard nei C1: " + ", ".join(odd))
 auto_turno = {}
 for v in sales: auto_turno[v["id"]] = auto_turno.get(v["id"], 0) + v["auto"]
@@ -555,6 +604,7 @@ def show_data(s):
     rows = [v for v in sales if v["id"] == s["id"]]
     auto = sum(v["auto"] for v in rows)
     return {"id": s["id"], "data": s["date"].isoformat(), "ora": s["time"].strftime("%H:%M"), "slot": slot(s["time"]),
+            "ore_c1": s["ore_c1"],
             "capienza": s["cap"], "auto": auto, "biglietti": auto, "persone": sum(v["persone"] for v in rows),
             "tipi": per_tipo(rows), "botteghino": botteghino(rows), "incasso": round(sum(v["lordo"] for v in rows), 2),
             "annullati": sum(v["ann"] for v in rows)}
