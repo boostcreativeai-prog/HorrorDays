@@ -106,6 +106,7 @@ tr.zero td{color:#a39d9599}
 .peak .d{font-size:13px;color:var(--muted)}
 .more{margin-top:14px;background:transparent;color:var(--white);border:1px solid var(--line);border-radius:999px;padding:9px 16px;font:400 12px/1 var(--f-display);letter-spacing:.14em;text-transform:uppercase;cursor:pointer}
 .cell small{font:400 11px/1 var(--f-body);color:#ede8e0b3;margin-left:3px}
+.cell.mix{flex-direction:column;gap:3px}.cell.mix small{margin:0;font-size:10px;color:var(--amber);white-space:nowrap}
 .checks{display:grid;grid-template-columns:1fr 1fr;gap:20px}
 .check{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--line-soft);font-size:14px}
 .check .s{font:400 20px/1 var(--f-lcd);width:34px;flex:none}
@@ -166,7 +167,7 @@ footer{margin-top:56px;border-top:1px solid var(--line);padding:28px 0 40px;colo
 
   <section>
     <h2>Tipologie <em>di ticket</em></h2>
-    <p class="h-sub">Ogni biglietto è un'auto: 24 € = 2 persone, 36 € = 3 persone, 48 € = 4 persone, 60 € = 5 persone. A botteghino (15 €) ogni biglietto è una persona, senza auto</p>
+    <p class="h-sub">Ogni biglietto è un'auto: 24 € = 2 persone, 36 € = 3 persone, 48 € = 4 persone, 60 € = 5 persone. Il lunedì si vende a persona, senza auto: online 12 € e botteghino 15 € (1 biglietto = 1 persona)</p>
     <div class="tipi" id="tipi"></div>
     <div class="panel"><h3>Auto per serata e tipologia</h3><div class="legend" id="legTipi"></div><div class="chart"><canvas id="cTipiSerate"></canvas></div></div>
   </section>
@@ -259,8 +260,13 @@ Chart.defaults.plugins.legend.display=false;Chart.defaults.maintainAspectRatio=f
 function draw(id,cfg){charts[id]?.destroy();charts[id]=new Chart(document.getElementById(id),cfg)}
 
 // 1 biglietto = 1 auto; le persone dipendono dalla tipologia (24 € = 2, 36 € = 3, 48 € = 4, 60 € = 5)
-// a botteghino (15 €) 1 biglietto = 1 persona e nessuna auto: conta in persone e incasso, non nelle auto
-const bott=s=>s.botteghino||{biglietti:0,persone:0,incasso:0};
+// biglietti a persona senza auto (lunedì): online 12 € e botteghino 15 €, 1 biglietto = 1 persona e nessuna auto.
+// Contano in persone e incasso, non nelle auto
+const Z0={biglietti:0,persone:0,incasso:0};
+const bott=s=>s.botteghino||Z0,onl=s=>s.online||Z0;
+const senza=s=>{const b=bott(s),o=onl(s);return {biglietti:b.biglietti+o.biglietti,persone:b.persone+o.persone,incasso:b.incasso+o.incasso}};
+// dettaglio per canale, es. "online 4 persone (48,00 €) · botteghino 8 persone (120,00 €)"
+const canali=s=>[["online",onl(s)],["botteghino",bott(s)]].filter(([,c])=>c.biglietti).map(([l,c])=>`${l} ${int(c.persone)} persone (${eur(c.incasso)})`);
 const TIPO_COL={2:C.amber,3:"#c9c2b8",4:C.red,5:"#8f1a14"};
 const TIPO_FB=[{persone:2,prezzo:24},{persone:3,prezzo:36},{persone:4,prezzo:48},{persone:5,prezzo:60}];
 // tipologie dai dati, completate con quelle note che non hanno ancora vendite (es. dati generati prima del ticket da 60 €)
@@ -278,15 +284,15 @@ function render(D){
   const TIPI=tipologie(D);
   document.getElementById("src").textContent="Fonte: "+D.fonte.join(", ");
   const delta=(a,b,f)=>prev&&a!=null&&b!=null?`<span class="${a-b>0?"up":""}">${a-b>0?"+":""}${f(a-b)}</span> dall'ultimo aggiornamento`:"Prima estrazione";
-  const A=auto(T),P=pers(T),B=bott(T);
+  const A=auto(T),P=pers(T),B=senza(T);
   const k=[
     ["Incasso lordo",eur(T.incasso),delta(last.incasso,prev?.incasso,eur)],
     ["Auto vendute",int(A),delta(auto(last),prev&&auto(prev),int)],
     ["Persone",int(P),delta(last.persone,prev?.persone,int)],
     ["Occupazione media",pct(T.capienza?A/T.capienza:0),`<b>${int(A)}</b> auto su <b>${int(T.capienza)}</b> posti auto`],
-    ["Persone per auto",(A?(P-B.persone)/A:0).toLocaleString("it-IT",{maximumFractionDigits:2}),B.persone?`Media sulle auto · <b>${int(B.persone)}</b> persone a botteghino`:"Media su tutte le auto vendute"],
+    ["Persone per auto",(A?(P-B.persone)/A:0).toLocaleString("it-IT",{maximumFractionDigits:2}),B.persone?`Media sulle auto · <b>${int(B.persone)}</b> persone senza auto (online e botteghino)`:"Media su tutte le auto vendute"],
     ["Spettacoli con vendite",`${T.spettacoli_venduti}<small> / ${T.spettacoli}</small>`,`<b>${pct(T.spettacoli_venduti/T.spettacoli)}</b> dei turni`],
-    ["Prezzo medio per auto",eur(A?(T.incasso-B.incasso)/A:0),B.incasso?"Incasso in auto diviso auto (botteghino escluso)":"Incasso diviso auto"],
+    ["Prezzo medio per auto",eur(A?(T.incasso-B.incasso)/A:0),B.incasso?"Incasso in auto diviso auto (online e botteghino a persona esclusi)":"Incasso diviso auto"],
     ["Ultimo aggiornamento",dt(D.aggiornato).replace(",",""),`<b>${S.length}</b> estrazioni nello storico`]];
   document.getElementById("kpis").innerHTML=k.map(([l,v,x])=>`<div class="kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="d">${x}</div></div>`).join("");
 
@@ -297,11 +303,12 @@ function render(D){
     <div class="nums"><div><b>${int(t.auto)}</b>auto</div><div><b>${int(t.persone_tot)}</b>persone</div></div>
     <div class="bar"><i style="width:${(t.auto/totA*100).toFixed(1)}%"></i></div>
     <div class="foot"><span>${pct(t.auto/totA)} delle auto</span><span>${eur(t.incasso)}</span></div></div>`).join("")+
-    (B.biglietti?`<div class="tipo" style="--c:${C.muted}">
-    <div class="l">Botteghino<small>Ticket da 15 € a persona · nessuna auto</small></div>
-    <div class="nums"><div><b>${int(B.biglietti)}</b>biglietti</div><div><b>${int(B.persone)}</b>persone</div></div>
+    // una sola scheda per i biglietti a persona senza auto: online 12 € e botteghino 15 €
+    (B.biglietti||T.online?`<div class="tipo" style="--c:${C.amber}">
+    <div class="l">A persona · lunedì<small>Online 12 € · botteghino 15 € · nessuna auto</small></div>
+    <div class="nums"><div><b>${int(onl(T).persone)}</b>online</div><div><b>${int(bott(T).persone)}</b>botteghino</div></div>
     <div class="bar"><i style="width:0%"></i></div>
-    <div class="foot"><span>Fuori dalla capienza auto</span><span>${eur(B.incasso)}</span></div></div>`:"");
+    <div class="foot"><span>${eur(onl(T).incasso)} online</span><span>${eur(bott(T).incasso)} bott.</span></div></div>`:"");
   document.getElementById("legTipi").innerHTML=TIPI.map(t=>`<span><i class="dot" style="background:${TIPO_COL[t.persone]}"></i>Auto da ${t.persone} (${eur(t.prezzo).replace(",00","")})</span>`).join("");
   const dates=[...new Set(D.spettacoli.map(s=>s.data))];
   const lab=dates.map(x=>`${GG[d(x).getDay()]} ${ddmm(x)}`);
@@ -354,10 +361,11 @@ function heat(){
     h+=`<div class="day">${ddmm(dd)}<span>${GG[wd]}</span></div>`;
     for(const sl of SLOTS){const s=day.find(x=>x.slot===sl);const n=s?val(s):null;
       const a=n?0.25+0.75*n/max:0;
-      const tip=s?`${ddmm(dd)} ${s.ora} · ${auto(s)} auto su ${s.capienza} · ${pers(s)} persone`+(s.tipi?` (${tipiP().map(p=>`da ${p}: ${s.tipi[p]||0}`).join(", ")})`:"")+(bott(s).biglietti?` · botteghino: ${int(bott(s).persone)} persone (${eur(bott(s).incasso)})`:"")+` · ${eur(s.incasso)}`:"";
-      // contorno ambra: turno con vendite a botteghino (persone senza auto)
-      const bt=s&&bott(s).biglietti?"box-shadow:inset 0 0 0 1px "+C.amber+";":"";
-      h+=n===null?`<div class="cell" title="Nessuno spettacolo">·</div>`:`<div class="cell ${n?"on":""}" style="${n?`background:rgba(212,58,49,${a.toFixed(2)});`:""}${bt}" title="${tip}">${fmt(n)}</div>`}
+      const tip=s?`${ddmm(dd)} ${s.ora} · ${auto(s)} auto su ${s.capienza} · ${pers(s)} persone`+(s.tipi?` (${tipiP().map(p=>`da ${p}: ${s.tipi[p]||0}`).join(", ")})`:"")+(s&&senza(s).biglietti?` · senza auto: ${canali(s).join(" · ")}`:"")+` · ${eur(s.incasso)}`:"";
+      // contorno ambra e riga sotto il numero: persone a persona senza auto (online e botteghino)
+      const sz=s?senza(s):Z0,bt=sz.biglietti?"box-shadow:inset 0 0 0 1px "+C.amber+";":"";
+      const sub=sz.biglietti&&heatMode==="auto"?`<small>+${int(sz.persone)} pers.</small>`:"";
+      h+=n===null?`<div class="cell" title="Nessuno spettacolo">·</div>`:`<div class="cell ${n?"on":""} ${sub?"mix":""}" style="${n?`background:rgba(212,58,49,${a.toFixed(2)});`:""}${bt}" title="${tip}">${fmt(n)}${sub}</div>`}
     const tot=day.reduce((a,s)=>a+val(s),0);
     h+=`<div class="cell tot" title="${ddmm(dd)}: ${heatMode==="incasso"?eur(tot):int(tot)}">${fmt(tot)}</div>`}
   // totale per turno su tutte le serate
@@ -366,16 +374,16 @@ function heat(){
   h+=`<div class="day">TOT<span>per turno</span></div>${SLOTS.map(sl=>`<div class="cell sum" title="Turno ${sl}: ${heatMode==="incasso"?eur(colTot(sl)):int(colTot(sl))}">${fmt(colTot(sl))}</div>`).join("")}<div class="cell tot" title="${heatMode==="incasso"?eur(all):int(all)}">${fmt(all)}</div>`;
   const el=document.getElementById("heat");el.innerHTML=h;el.classList.toggle("eur",heatMode==="incasso");el.style.setProperty("--n",SLOTS.length);
   document.getElementById("heatSub").textContent=heatMode==="auto"
-    ?`Auto per turno su una capienza di ${D.capienza_turno||80}: più il rosso è acceso, più il turno è pieno`+(D.totali.botteghino?.biglietti?" · contorno ambra: vendite a botteghino (persone senza auto)":"")
+    ?`Auto per turno su una capienza di ${D.capienza_turno||80}: più il rosso è acceso, più il turno è pieno`+(senza(D.totali).biglietti||D.totali.online?" · contorno ambra: biglietti a persona senza auto (online 12 € e botteghino 15 €)":"")
     :heatMode==="persone"?"Persone per turno (auto × persone per tipologia)"
-    :"Incasso lordo per turno in euro (botteghino compreso), aggiornato a ogni estrazione: più il rosso è acceso, più il turno ha incassato";
+    :"Incasso lordo per turno in euro (online e botteghino compresi), aggiornato a ogni estrazione: più il rosso è acceso, più il turno ha incassato";
 }
 function turni(){
   const S=DATA.spettacoli;
   draw("cTurni",{type:"bar",data:{labels:S.map(s=>`${GG[d(s.data).getDay()]} ${ddmm(s.data)} ${s.ora}`),
-      datasets:[{data:S.map(s=>s.incasso||0),backgroundColor:S.map(s=>bott(s).incasso?C.amber:C.red),hoverBackgroundColor:C.deep,borderRadius:2}]},
+      datasets:[{data:S.map(s=>s.incasso||0),backgroundColor:S.map(s=>senza(s).incasso&&!auto(s)?C.amber:C.red),hoverBackgroundColor:C.deep,borderRadius:2}]},
     options:{scales:{y:{beginAtZero:true,ticks:{callback:v=>eur(v).replace(",00","")}},x:{grid:{display:false},ticks:{autoSkip:true,maxRotation:60}}},
-      plugins:{tooltip:{callbacks:{label:c=>{const s=S[c.dataIndex],b=bott(s);return [eur(s.incasso),`${int(auto(s))} auto · ${int(pers(s))} persone`].concat(b.incasso?[`di cui botteghino: ${eur(b.incasso)}`]:[])}}}}}});
+      plugins:{tooltip:{callbacks:{label:c=>{const s=S[c.dataIndex];return [eur(s.incasso),`${int(auto(s))} auto · ${int(pers(s))} persone`].concat(canali(s).map(x=>"di cui "+x))}}}}}});
 }
 document.getElementById("heatMode").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;heatMode=b.dataset.m;
   document.querySelectorAll("#heatMode button").forEach(x=>x.setAttribute("aria-pressed",x.dataset.m===heatMode));if(DATA)heat()});
@@ -414,10 +422,12 @@ document.getElementById("regMore").addEventListener("click",()=>{regAll=!regAll;
 function showsTable(){
   const rows=DATA.spettacoli.filter(s=>filter==="tutte"||s.data===filter);
   const tp=(s,p)=>s.tipi?int(s.tipi[p]||0):"–";
-  document.getElementById("tShows").innerHTML=`<tr><th>Serata</th><th>Turno</th><th class="n">Auto</th>${tipiP().map(p=>`<th class="n">Da ${p}</th>`).join("")}<th class="n">Persone</th><th class="n">Incasso</th><th>Occupazione auto</th><th>Stato</th></tr>`+
-    rows.map(s=>{const n=auto(s),o=s.capienza?n/s.capienza:0,v=n||bott(s).biglietti;return `<tr class="${v?"":"zero"}"><td>${GG[d(s.data).getDay()]} ${ddmm(s.data)}</td><td>${s.ora}</td><td class="n">${int(n)}</td>${tipiP().map(p=>`<td class="n">${tp(s,p)}</td>`).join("")}<td class="n">${int(pers(s))}</td><td class="n">${eur(s.incasso)}</td>
+  // colonne online e botteghino (persone a persona senza auto) solo se i dati le hanno
+  const CN=[["Online",onl,"online"],["Botteghino",bott,"botteghino"]].filter(([,f,k])=>DATA.totali[k]&&(k==="online"||f(DATA.totali).biglietti));
+  document.getElementById("tShows").innerHTML=`<tr><th>Serata</th><th>Turno</th><th class="n">Auto</th>${tipiP().map(p=>`<th class="n">Da ${p}</th>`).join("")}${CN.map(([l])=>`<th class="n" title="Persone, biglietti a persona senza auto">${l}</th>`).join("")}<th class="n">Persone</th><th class="n">Incasso</th><th>Occupazione auto</th><th>Stato</th></tr>`+
+    rows.map(s=>{const n=auto(s),o=s.capienza?n/s.capienza:0,v=n||senza(s).biglietti;return `<tr class="${v?"":"zero"}"><td>${GG[d(s.data).getDay()]} ${ddmm(s.data)}</td><td>${s.ora}</td><td class="n">${int(n)}</td>${tipiP().map(p=>`<td class="n">${tp(s,p)}</td>`).join("")}${CN.map(([,f])=>`<td class="n">${int(f(s).persone)}</td>`).join("")}<td class="n">${int(pers(s))}</td><td class="n">${eur(s.incasso)}</td>
       <td><div style="display:flex;align-items:center;gap:10px"><div class="bar" style="flex:1"><i style="width:${Math.min(100,o*100)}%"></i></div><span style="min-width:64px;text-align:right">${n}/${s.capienza}</span></div></td>
-      <td><span class="pill ${v?"on":""}">${n?"Venduto":v?"Botteghino":"Zero vendite"}</span></td></tr>`}).join("");
+      <td><span class="pill ${v?"on":""}">${v?"Venduto":"Zero vendite"}</span></td></tr>`}).join("");
 }
 document.getElementById("filters").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;filter=b.dataset.f;
   document.querySelectorAll("#filters button").forEach(x=>x.setAttribute("aria-pressed",x.dataset.f===filter));showsTable()});
