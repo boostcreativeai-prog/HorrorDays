@@ -20,21 +20,23 @@ quindi solo acquisti andati a buon fine.
 
 **Auto e persone.** Ogni biglietto è un'auto, e la capienza del C1 (200 per turno) è in auto. Le persone
 dipendono dal prezzo: 24 € = 2 persone, 36 € = 3, 48 € = 4, 60 € = 5 (sempre 12 € a persona). Il report mostra auto e
-persone per turno, serata e tipologia. Fanno eccezione i biglietti **a persona** dei lunedì: **online a 12 €**
-(02/11) e **botteghino a 15 €** (02/11 e 09/11). Ogni biglietto è 1 persona e **nessuna auto**: conta in persone e
-incasso, non in auto, tipologie e occupazione. Il sito li mostra divisi per canale (scheda "A persona", colonne Online
-e Botteghino nella tabella degli spettacoli, dettaglio nei turni della tabella Serate e turni).
-La cassa riusa lo stesso codice con prezzi diversi (I1 = 48 € in auto, 15 € a botteghino), quindi ogni tariffa è
-codice + prezzo (es. `I1 48€`, `I1 15€`). Un prezzo diverso (es. un omaggio a 0 €) finisce tra le anomalie:
+persone per turno, serata e tipologia. Fa eccezione la vendita **online a persona** di lunedì 02/11:
+**12 €**, 1 persona e **nessuna auto**. Conta in persone e incasso, non in auto, tipologie e occupazione. Il sito la
+mostra nella scheda "Online · lun 02/11", nella colonna Online della tabella degli spettacoli e nei turni del 02/11.
+**Botteghino escluso.** Il botteghino non entra nel report: i biglietti da 15 € del 02/11 e la serata del 09/11 (aperta
+solo a botteghino) non contano in nessun totale (`PREZZI_ESCLUSI` e `DATE_ESCLUSE` in `scripts/build_report.py`). Il
+controllo sull'incasso li somma a parte per quadrare con il TOTALE GENERALE del C1.
+La cassa riusa lo stesso codice con prezzi diversi (es. I1 = 48 € in auto e 15 € a botteghino), quindi ogni tariffa è
+codice + prezzo (es. `I1 48€`). Un prezzo diverso (es. un omaggio a 0 €) finisce tra le anomalie:
 indica quante persone e quante auto vale nelle colonne "Persone per biglietto" e "Auto per biglietto" del foglio
 Tariffe dell'Excel in `data/`.
 **Incasso per turno.** Nella sezione Serate e turni il pulsante **Incasso** mostra l'incasso lordo di ogni turno
-(online e botteghino compresi), con il totale per serata e per orario; sotto c'è il grafico dell'incasso di tutti i turni.
+(online a persona compreso), con il totale per serata e per orario; sotto c'è il grafico dell'incasso di tutti i turni.
 Si aggiorna da solo a ogni estrazione, come il resto della pagina.
 La capienza è di **80 auto per turno** (`CAPIENZA_AUTO` in `scripts/build_report.py`), non i 200 del C1: il totale
 dei posti auto è 80 × il numero di turni presenti nei C1 (compresi i turni extra delle 19:15 del 31/10 e dell'01/11).
 **Turni doppi.** La cassa a volte crea due eventi per lo stesso turno a 1-2 minuti di distanza (il 02/11: 20:15 per il
-botteghino da 15 € e 20:16 per l'online da 12 €, 23:58 e 23:59). Lo script riconduce ogni pagina del C1 al turno standard più vicino
+botteghino, escluso, e 20:16 per l'online da 12 €, 23:58 e 23:59). Lo script riconduce ogni pagina del C1 al turno standard più vicino
 (entro 10 minuti; dalle 23:30 è il turno delle 23:59) e somma le vendite in un solo turno da 80 auto. Il controllo
 "Spettacoli = pagine dei PDF" elenca i turni accorpati.
 

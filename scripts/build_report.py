@@ -22,15 +22,17 @@ OUT = PREV = args.xlsx
 SNAP = dt.datetime.now(ZoneInfo("Europe/Rome")).replace(tzinfo=None, second=0, microsecond=0)
 
 # Ogni titolo d'accesso è un'auto (la capienza del C1 è in auto). Le persone dipendono dal prezzo:
-# 24 € = 2 persone, 36 € = 3, 48 € = 4, 60 € = 5, cioè 12 € a persona. Fanno eccezione i biglietti a persona
-# dei lunedì, senza auto: botteghino da 15 € (02/11 e 09/11) e online da 12 € (02/11, eventi delle 20:16, 21:16...).
-# Ognuno è 1 persona e nessuna auto. Prezzi diversi si definiscono nel foglio Tariffe (colonne "Persone per
-# biglietto" e "Auto per biglietto"), altrimenti finiscono tra le anomalie.
-PERSONE_PER_PREZZO = {12.0: 1, 15.0: 1, 24.0: 2, 36.0: 3, 48.0: 4, 60.0: 5}
-AUTO_PER_PREZZO = {12.0: 0, 15.0: 0}  # gli altri prezzi valgono 1 auto
+# 24 € = 2 persone, 36 € = 3, 48 € = 4, 60 € = 5, cioè 12 € a persona. Fa eccezione il biglietto online a persona
+# di lunedì 02/11 (eventi delle 20:16, 21:16...): 12 €, 1 persona e nessuna auto. Prezzi diversi si definiscono nel
+# foglio Tariffe (colonne "Persone per biglietto" e "Auto per biglietto"), altrimenti finiscono tra le anomalie.
+PERSONE_PER_PREZZO = {12.0: 1, 24.0: 2, 36.0: 3, 48.0: 4, 60.0: 5}
+AUTO_PER_PREZZO = {12.0: 0}  # gli altri prezzi valgono 1 auto
 EURO_A_PERSONA = 12.0
-EURO_BOTTEGHINO = 15.0
 EURO_ONLINE = 12.0  # biglietto online a persona senza auto (lunedì 02/11)
+# Il botteghino resta fuori dal report: i biglietti da 15 € (02/11) e la serata del 09/11, aperta solo a botteghino.
+# Non contano in nessun totale; il controllo sull'incasso del C1 li somma a parte.
+PREZZI_ESCLUSI = {15.0}
+DATE_ESCLUSE = {dt.date(2026, 11, 9)}
 # Capienza reale del drive-in: 80 auto per turno (il C1 riporta 200, che non è il limite effettivo).
 # Le persone non hanno un limite proprio: dipendono dalle auto.
 CAPIENZA_AUTO = 80
@@ -79,8 +81,15 @@ for p in pdfs:
             shows.append(dict(id=sid, date=date, time=dt.time(hh, mm), titolo=tit, locale=loc, codloc=cod,
                               cap=cap, tot_n=int(tg.group(1)), tot=float(tg.group(2)), mese=mese))
 
+escluso = lambda v: v["date"] in DATE_ESCLUSE or round(v["prezzo"], 2) in PREZZI_ESCLUSI
+esclusi = [v for v in sales if escluso(v)]
+sales = [v for v in sales if not escluso(v)]
+pagine_escluse = sum(1 for s in shows if s["date"] in DATE_ESCLUSE)
+shows = [s for s in shows if s["date"] not in DATE_ESCLUSE]
+escl_n, escl_l = sum(v["n"] for v in esclusi), round(sum(v["lordo"] for v in esclusi), 2)
+
 # Turni: la cassa a volte crea due eventi per lo stesso turno con orari a 1-2 minuti di distanza
-# (il 02/11: 20:15 per il botteghino da 15 € e 20:16 per l'online da 12 €; 23:58 e 23:59). Ogni pagina del C1 viene
+# (il 02/11: 20:15 per il botteghino, escluso, e 20:16 per l'online da 12 €; 23:58 e 23:59). Ogni pagina del C1 viene
 # ricondotta al suo turno standard (se dista al massimo 10 minuti; dalle 23:30 è il turno delle 23:59)
 # e le pagine dello stesso turno diventano un solo spettacolo, con le vendite sommate e capienza 80 auto.
 TURNI = [dt.time(19, 15), dt.time(20, 15), dt.time(21, 15), dt.time(22, 15), dt.time(23, 15), dt.time(23, 59)]
@@ -119,7 +128,7 @@ sales.sort(key=lambda s: (s["date"], s["time"]))
 def descr_tipo(p, a, prezzo):
     if a:
         return f"Auto da {p} · {prezzo:.0f} €"
-    return f"{'Online' if round(prezzo / p, 2) == EURO_ONLINE else 'Botteghino'} · {prezzo / p:.0f} € a persona"
+    return f"Online · {prezzo / p:.0f} € a persona"
 
 # La cassa riusa lo stesso codice con prezzi diversi (I1 = 48 € in auto, 15 € a botteghino il 02/11):
 # ogni tariffa è quindi codice + prezzo.
@@ -142,6 +151,8 @@ if PREV and os.path.exists(PREV):
                 if not mp:
                     continue
                 key = chiave_tariffa(key, float(mp.group(1).replace(",", ".")))
+            if float(key.rsplit(" ", 1)[-1].rstrip("€")) in PREZZI_ESCLUSI:  # botteghino: fuori dal report
+                continue
             tariffe.append([key, r[1], r[2], pers, auto_b, r[1] == "DA DEFINIRE"])
     ws_old = wbp["Storico"]
     cols = {str(c.value).strip(): i for i, c in enumerate(ws_old[1]) if c.value}
@@ -152,7 +163,8 @@ if PREV and os.path.exists(PREV):
         if r[0]:
             pers = r[c_pers] if c_pers is not None and isinstance(r[c_pers], (int, float)) else None
             storico.append([r[0], r[c_auto], r[c_inc], pers])
-    prev_ids = sorted({turno_id(str(r[0])) for r in wbp["Spettacoli"].iter_rows(min_row=2, values_only=True) if r[0]})
+    prev_ids = sorted({turno_id(str(r[0])) for r in wbp["Spettacoli"].iter_rows(min_row=2, values_only=True) if r[0]
+                       and dt.datetime.strptime(str(r[0])[:8], "%Y%m%d").date() not in DATE_ESCLUSE})
 
 # persone e auto per biglietto di ogni tariffa: prima il foglio Tariffe, poi la regola sul prezzo
 prezzo_codice = {}
@@ -182,7 +194,7 @@ non_mappati = []
 for s in sales:
     t = known[s["tar"]]
     s["pers_auto"] = t[3]  # persone per biglietto
-    s["auto_tit"] = t[4]   # auto per biglietto (0 a botteghino)
+    s["auto_tit"] = t[4]   # auto per biglietto (0 online a persona)
     s["auto"] = s["n"] * s["auto_tit"]
     s["persone"] = s["n"] * s["pers_auto"] if s["pers_auto"] else 0
     if not s["pers_auto"] and s["n"]:
@@ -310,7 +322,7 @@ for i, t in enumerate(tariffe, 2):
 NT = len(tariffe) + 1
 TR = "Tariffe!$A$2:$A$200"
 
-# Vendite: una riga per spettacolo e tariffa. Ogni titolo è un'auto, tranne a botteghino (0 auto).
+# Vendite: una riga per spettacolo e tariffa. Ogni titolo è un'auto, tranne l'online a persona (0 auto).
 nV = len(sales)
 header(wsV, ["ID spettacolo", "Data", "Ora", "Settore", "Tariffa (codice e prezzo)", "Descrizione tariffa", "Prezzo unitario",
              "N° auto", "N° annullati", "Incasso lordo", "Prevendita", "Imponibile IVA", "IVA",
@@ -329,10 +341,10 @@ V = lambda col: f"Vendite!${col}$2:${col}$1000"
 # Tipologie: auto da 2, 3, 4 persone
 header(wsY, ["Tipologia", "Prezzo", "Persone per auto", "N° auto", "Persone", "Incasso", "% delle auto"], [22, 10, 16, 10, 10, 13, 13])
 tipi_rows = [(f"Auto da {p} persone", p * EURO_A_PERSONA, p) for p in TIPI]
-# biglietti a persona senza auto: una riga per prezzo (online 12 €, botteghino 15 €), filtrata anche sul prezzo
+# biglietti online a persona senza auto (12 €): riga filtrata anche sul prezzo
 tipi_rows = [r + (None,) for r in tipi_rows]
 for prezzo in sorted({v["prezzo"] for v in sales if not v["auto_tit"] and v["pers_auto"] == 1}):
-    tipi_rows.append((f"{'Online' if prezzo == EURO_ONLINE else 'Botteghino'} ({prezzo:.0f} € a persona, senza auto)", prezzo, 1, prezzo))
+    tipi_rows.append((f"Online ({prezzo:.0f} € a persona, senza auto)", prezzo, 1, prezzo))
 if non_mappati:
     tipi_rows.append(("Da definire (prezzo non previsto)", None, 0, None))
 NY = len(tipi_rows) + 1
@@ -366,7 +378,7 @@ for i, s in enumerate(shows, 2):
            [f"=SUMIFS({V('H')},{V('A')},A{i},{V('O')},{p})" for p in TIPI] + \
            [f"=SUMIF({V('A')},A{i},{V('I')})", f"=SUMIF({V('A')},A{i},{V('J')})", f"=SUMIF({V('A')},A{i},{V('L')})",
             f"=SUMIF({V('A')},A{i},{V('M')})", f'=IF(E{i}>0,F{i}/E{i},0)',
-            f'=IF(F{i}>0,"Venduto",IF({cS["inc"]}{i}>0,"Solo a persona","Zero vendite"))', f"=F{i}+{cS['inc']}{i}/100000+(1000-ROW())/100000000"]
+            f'=IF(F{i}>0,"Venduto",IF({cS["inc"]}{i}>0,"Solo online","Zero vendite"))', f"=F{i}+{cS['inc']}{i}/100000+(1000-ROW())/100000000"]
     for c, v in enumerate(vals, 1): wsS.cell(row=i, column=c, value=v)
 NSC = 7 + NTP + 7
 body(wsS, nS, NSC, {2: DATE, 4: TIME, **{c: INT for c in range(5, 9 + NTP)}, 9 + NTP: EUR, 10 + NTP: EUR, 11 + NTP: EUR, 12 + NTP: PCT})
@@ -490,7 +502,7 @@ dash.sheet_view.showGridLines = False
 for c, w in zip("ABCDEFGHIJKLMNO", [2, 22, 18, 3, 22, 18, 3, 22, 18, 3, 12, 8, 9, 10, 13]):
     dash.column_dimensions[c].width = w
 dash["B2"] = "HORROR DAYS · Vendite biglietti"; dash["B2"].font = Font(name="Arial", size=18, bold=True, color="1F2430")
-dash["B3"] = "Drive In Pozzuoli · MIX MARK S.R.L. · fonte: Riepiloghi mensili C1 (18Tickets) · 1 biglietto = 1 auto (a persona senza auto: online 12 €, botteghino 15 €)"; dash["B3"].font = Font(name="Arial", size=10, color="6B7280")
+dash["B3"] = "Drive In Pozzuoli · MIX MARK S.R.L. · fonte: Riepiloghi mensili C1 (18Tickets) · 1 biglietto = 1 auto (online 02/11: 12 € a persona, nessuna auto; botteghino escluso)"; dash["B3"].font = Font(name="Arial", size=10, color="6B7280")
 tipi_txt = '&" · "&'.join(f'"Da {p}: "&Tipologie!D{k}' for k, p in enumerate(TIPI, 2))
 kpis = [
     ("Incasso lordo totale", f"=SUM({V('J')})", EUR),
@@ -568,9 +580,11 @@ wb.save(OUT)
 checks = []
 def chk(name, ok, detail=""):
     checks.append({"controllo": name, "ok": bool(ok), "dettaglio": detail})
-chk("Incasso Vendite = somma TOTALE GENERALE", abs(tot_l - pdf_tot_gen) < 0.01, f"{tot_l:.2f} vs {pdf_tot_gen:.2f}")
-chk("Spettacoli = pagine dei PDF", sum(s["pagine"] for s in shows) == total_pages,
-    f"{len(shows)} spettacoli, {total_pages} pagine" + (f" ({len(accorpati)} turni doppi accorpati: " +
+chk("Incasso Vendite + botteghino escluso = somma TOTALE GENERALE", abs(tot_l + escl_l - pdf_tot_gen) < 0.01,
+    f"{tot_l:.2f} + {escl_l:.2f} vs {pdf_tot_gen:.2f} (botteghino escluso: {escl_n} biglietti)")
+chk("Spettacoli = pagine dei PDF", sum(s["pagine"] for s in shows) + pagine_escluse == total_pages,
+    f"{len(shows)} spettacoli, {total_pages} pagine"
+    + (f", {pagine_escluse} della serata esclusa ({', '.join(f'{x:%d/%m}' for x in sorted(DATE_ESCLUSE))})" if pagine_escluse else "") + (f" ({len(accorpati)} turni doppi accorpati: " +
     ", ".join(f"{s['date']:%d/%m} {' + '.join(s['ore_c1'])}" for s in accorpati) + ")" if accorpati else ""))
 bad = [s for s in sales if abs(s["impiva"] + s["iva"] - s["lordo"]) > 0.01]
 chk("Imponibile IVA + IVA = incasso lordo per riga", not bad, f"{len(bad)} righe non quadrate")
@@ -595,7 +609,7 @@ if non_mappati:
     anomalies.append("Auto senza numero di persone (prezzo non previsto, da indicare nel foglio Tariffe): " +
                      ", ".join(f"{s['id']} {s['code']} {s['prezzo']:.2f} € ({s['n']})" for s in non_mappati))
 elif abs(atteso - tot_l) > 0.01:
-    anomalies.append(f"Persone × prezzo a persona ({EURO_A_PERSONA:.0f} € in auto, {EURO_ONLINE:.0f} € online e {EURO_BOTTEGHINO:.0f} € a botteghino senza auto: {atteso:.2f} €) "
+    anomalies.append(f"Persone × prezzo a persona ({EURO_A_PERSONA:.0f} € in auto, {EURO_ONLINE:.0f} € online senza auto: {atteso:.2f} €) "
                      f"diverso dall'incasso ({tot_l:.2f} €): controlla persone e auto per biglietto nel foglio Tariffe")
 
 tmap = {t[0]: t for t in tariffe}
@@ -603,11 +617,9 @@ def slot(t):
     return "23:59" if t >= dt.time(23, 30) else t.strftime("%H:%M")
 def per_tipo(rows):
     return {str(p): sum(v["auto"] for v in rows if v["pers_auto"] == p) for p in TIPI}
-def canale(v):
-    """Canale di un biglietto a persona senza auto: online (12 €) o botteghino (15 € e altri prezzi)."""
-    return "online" if v["pers_auto"] and round(v["prezzo"] / v["pers_auto"], 2) == EURO_ONLINE else "botteghino"
-def botteghino(rows, c="botteghino"):
-    rows = [v for v in rows if not v["auto_tit"] and canale(v) == c]
+def online(rows):
+    """Biglietti online a persona, senza auto (02/11)."""
+    rows = [v for v in rows if not v["auto_tit"]]
     return {"biglietti": sum(v["n"] for v in rows), "persone": sum(v["persone"] for v in rows),
             "incasso": round(sum(v["lordo"] for v in rows), 2)}
 def show_data(s):
@@ -616,14 +628,14 @@ def show_data(s):
     return {"id": s["id"], "data": s["date"].isoformat(), "ora": s["time"].strftime("%H:%M"), "slot": slot(s["time"]),
             "ore_c1": s["ore_c1"],
             "capienza": s["cap"], "auto": auto, "biglietti": auto, "persone": sum(v["persone"] for v in rows),
-            "tipi": per_tipo(rows), "botteghino": botteghino(rows), "online": botteghino(rows, "online"), "incasso": round(sum(v["lordo"] for v in rows), 2),
+            "tipi": per_tipo(rows), "online": online(rows), "incasso": round(sum(v["lordo"] for v in rows), 2),
             "annullati": sum(v["ann"] for v in rows)}
 data = {
     "aggiornato": SNAP.strftime("%Y-%m-%dT%H:%M"),
     "fonte": [os.path.basename(p) for p in pdfs],
     # 1 biglietto = 1 auto; la capienza è in auto
     "totali": {"incasso": tot_l, "auto": tot_n, "biglietti": tot_n, "persone": tot_p, "tipi": per_tipo(sales),
-               "botteghino": botteghino(sales), "online": botteghino(sales, "online"),
+               "online": online(sales),
                "spettacoli": len(shows), "spettacoli_venduti": len({s["id"] for s in sales if s["n"]}),
                "capienza": sum(s["cap"] or 0 for s in shows)},
     "tipologie": [{"persone": p, "prezzo": p * EURO_A_PERSONA, "etichetta": f"Auto da {p}",
