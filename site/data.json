@@ -1,5 +1,5 @@
 {
- "aggiornato": "2026-11-03T00:12",
+ "aggiornato": "2026-11-03T01:24",
  "fonte": [
   "Riepilogo_mensile_C1_10_2026.pdf",
   "Riepilogo_mensile_C1_11_2026.pdf"
@@ -8142,6 +8142,13 @@
    "auto": 3071,
    "biglietti": 3071,
    "persone": 9717,
+   "incasso": 116604
+  },
+  {
+   "t": "2026-11-03T01:24",
+   "auto": 3071,
+   "biglietti": 3071,
+   "persone": 9717,
    "incasso": 116604.0
   }
  ],
@@ -13321,7 +13328,7 @@
   {
    "controllo": "Incasso Vendite + botteghino escluso = somma TOTALE GENERALE",
    "ok": true,
-   "dettaglio": "116604.00 + 540.00 vs 117144.00 (botteghino escluso: 36 biglietti)"
+   "dettaglio": "116604.00 + 570.00 vs 117174.00 (botteghino escluso: 38 biglietti)"
   },
   {
    "controllo": "Spettacoli = pagine dei PDF",
